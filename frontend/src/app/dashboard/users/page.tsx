@@ -107,10 +107,10 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Manajemen User
+          Registered Users
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {users.length} user terdaftar
+          {users.length} users
         </p>
       </div>
 
@@ -128,10 +128,10 @@ export default function UsersPage() {
                 Provider
               </th>
               <th className="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400">
-                Bergabung
+                Created At
               </th>
               <th className="px-6 py-3 text-right font-medium text-gray-500 dark:text-gray-400">
-                Aksi
+                Actions
               </th>
             </tr>
           </thead>
@@ -184,19 +184,19 @@ export default function UsersPage() {
                           className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                         >
                           {user.role === "SUPERADMIN"
-                            ? "Jadikan USER"
-                            : "Jadikan SUPERADMIN"}
+                            ? "Turn into USER"
+                            : "Turn into SUPERADMIN"}
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user.id)}
                           className="rounded-lg bg-red-500 px-3 py-1.5 text-xs text-white transition hover:bg-red-600"
                         >
-                          Hapus
+                          Delete
                         </button>
                       </>
                     )}
                     {user.id === currentUser?.id && (
-                      <span className="text-xs text-gray-400 italic">Anda</span>
+                      <span className="text-xs text-gray-400 italic">Vous</span>
                     )}
                   </div>
                 </td>
