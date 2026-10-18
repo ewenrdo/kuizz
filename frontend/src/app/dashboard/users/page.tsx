@@ -41,7 +41,7 @@ export default function UsersPage() {
   const deleteMutation = useMutation({
     mutationFn: async (userId: string) => {
       const res = await apiFetch(`/users/${userId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Gagal menghapus user");
+      if (!res.ok) throw new Error("Failed to delete user");
       return res.json();
     },
     onSuccess: () => {
@@ -79,7 +79,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     if (currentUser && currentUser.role !== "SUPERADMIN") {
-      toast.error("Akses ditolak");
+      toast.error("Access denied");
       router.push("/dashboard");
     }
   }, [currentUser, router]);
