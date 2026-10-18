@@ -85,9 +85,9 @@ export default function JoinContent() {
       setLoading(false);
     };
 
-    const onRoomNotFound = () => onRoomError("Room tidak ditemukan.");
-    const onRoomLocked = () => onRoomError("Room sudah dikunci oleh host.");
-    const onGameStarted = () => onRoomError("Game sudah dimulai.");
+    const onRoomNotFound = () => onRoomError("Room not found. It might have been closed.");
+    const onRoomLocked = () => onRoomError("Room is locked by the host.");
+    const onGameStarted = () => onRoomError("Game has already started.");
 
     const cleanupStep1Listeners = () => {
       socket.off("room_valid", onRoomValid);
@@ -138,9 +138,9 @@ export default function JoinContent() {
       setLoading(false);
     };
 
-    const onRoomNotFound = () => onActionError("Room tidak ditemukan.");
-    const onRoomLocked = () => onActionError("Room sudah dikunci oleh host.");
-    const onGameStarted = () => onActionError("Game sudah dimulai.");
+    const onRoomNotFound = () => onActionError("Room not found. It might have been closed.");
+    const onRoomLocked = () => onActionError("Room is locked by the host.");
+    const onGameStarted = () => onActionError("Game has already started.");
 
     const cleanupStep2Listeners = () => {
       socket.off("player_registered", onPlayerRegistered);

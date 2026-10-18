@@ -103,7 +103,7 @@ const AppHeader: React.FC = () => {
           </button>
 
           {/* Upgrade Button */}
-          <Button className="rounded-full bg-[#46178f] px-6 font-semibold text-white shadow-sm transition-all hover:bg-[#3b127a] hover:shadow-lg hover:shadow-[#46178f]/20" onClick={() => router.push("/")}>
+          <Button className="rounded-full bg-[#46178f] px-6 font-semibold text-white shadow-sm transition-all hover:bg-[#3b127a] hover:shadow-lg hover:shadow-[#46178f]/20" onClick={() => router.push("/join")}>
             Play
           </Button>
         </div>
