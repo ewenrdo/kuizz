@@ -6,6 +6,7 @@ import { useRouter } from "next/dist/client/components/navigation";
 import Link from "next/link";
 import React, { useEffect, useRef } from "react";
 import { logout } from "@/lib/auth";
+import { toast } from "sonner";
 
 const AppHeader: React.FC = () => {
   const { toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -35,11 +36,11 @@ const AppHeader: React.FC = () => {
     };
   }, []);
 
-    async function handleLogout() {
-      await logout();
-      router.push("/login");
-    }
-  
+  async function handleLogout() {
+    await logout();
+    router.push("/login");
+  }
+
 
   return (
     <header className="sticky top-0 z-40 flex h-[72px] w-full border-b border-gray-100 bg-white">
@@ -85,6 +86,12 @@ const AppHeader: React.FC = () => {
                 type="text"
                 placeholder="Find a quiz..."
                 className="h-11 w-full rounded-full border-transparent bg-gray-50 pr-4 pl-11 text-sm text-gray-900 transition-all outline-none placeholder:text-gray-400 focus:border-gray-200 focus:bg-white focus:ring-4 focus:ring-[#46178f]/5"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    toast.info("Search functionality is not implemented yet.");
+                  }
+                }}
               />
             </div>
           </form>
