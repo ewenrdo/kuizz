@@ -109,31 +109,34 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (navItems: NavItem[]) => (
     <ul className="flex flex-col gap-2">
-      {navItems.map((nav) => (
-        <li key={nav.name}>
-          {nav.path && (
-            <Link
-              href={nav.path}
-              className={`flex items-center gap-3 rounded-xl px-4 py-2.5 transition-colors ${
-                isActive(nav.path)
-                  ? "bg-[#F3E8FF] font-semibold text-[#46178f]"
-                  : "font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              <span
-                className={
-                  isActive(nav.path) ? "text-[#46178f]" : "text-gray-500"
-                }
+      {navItems
+        .filter(
+          (nav) => nav.name !== "Utilisateurs" || user?.role === "SUPERADMIN",
+        )
+        .map((nav) => (
+          <li key={nav.name}>
+            {nav.path && (
+              <Link
+                href={nav.path}
+                className={`flex items-center gap-3 rounded-xl px-4 py-2.5 transition-colors ${isActive(nav.path)
+                    ? "bg-[#F3E8FF] font-semibold text-[#46178f]"
+                    : "font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  }`}
               >
-                {nav.icon}
-              </span>
-              {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="text-[15px]">{nav.name}</span>
-              )}
-            </Link>
-          )}
-        </li>
-      ))}
+                <span
+                  className={
+                    isActive(nav.path) ? "text-[#46178f]" : "text-gray-500"
+                  }
+                >
+                  {nav.icon}
+                </span>
+                {(isExpanded || isHovered || isMobileOpen) && (
+                  <span className="text-[15px]">{nav.name}</span>
+                )}
+              </Link>
+            )}
+          </li>
+        ))}
     </ul>
   );
 
@@ -141,16 +144,14 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-50 mt-16 flex h-screen flex-col border-r border-gray-200 bg-white transition-all duration-300 ease-in-out lg:mt-0 ${
-        isExpanded || isMobileOpen ? "w-64" : isHovered ? "w-64" : "w-20"
-      } ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+      className={`fixed top-0 left-0 z-50 mt-16 flex h-screen flex-col border-r border-gray-200 bg-white transition-all duration-300 ease-in-out lg:mt-0 ${isExpanded || isMobileOpen ? "w-64" : isHovered ? "w-64" : "w-20"
+        } ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`flex h-[72px] items-center border-b border-gray-100 px-6 ${
-          !isExpanded && !isHovered ? "px-0 lg:justify-center" : "justify-start"
-        }`}
+        className={`flex h-[72px] items-center border-b border-gray-100 px-6 ${!isExpanded && !isHovered ? "px-0 lg:justify-center" : "justify-start"
+          }`}
       >
         <Link href="/" className="flex items-center gap-2">
           {isExpanded || isHovered || isMobileOpen ? (
@@ -177,11 +178,10 @@ const AppSidebar: React.FC = () => {
 
             <div>
               <h2
-                className={`mb-3 flex px-4 text-[11px] font-bold tracking-wider text-gray-400 uppercase ${
-                  !isExpanded && !isHovered
+                className={`mb-3 flex px-4 text-[11px] font-bold tracking-wider text-gray-400 uppercase ${!isExpanded && !isHovered
                     ? "px-0 lg:justify-center"
                     : "justify-start"
-                }`}
+                  }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? "RESOURCES" : "•••"}
               </h2>
@@ -195,9 +195,8 @@ const AppSidebar: React.FC = () => {
       <div className="relative border-t border-gray-100 p-4">
         <button
           onClick={toggleDropdown}
-          className={`flex w-full items-center gap-3 rounded-xl p-2 transition-colors hover:cursor-pointer hover:bg-gray-50 ${
-            !isExpanded && !isHovered ? "justify-center" : "text-left"
-          }`}
+          className={`flex w-full items-center gap-3 rounded-xl p-2 transition-colors hover:cursor-pointer hover:bg-gray-50 ${!isExpanded && !isHovered ? "justify-center" : "text-left"
+            }`}
         >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-200">
             {avatar ? (
@@ -215,7 +214,7 @@ const AppSidebar: React.FC = () => {
                 {user?.name || "—"}
               </h4>
               <p className="truncate text-xs text-gray-500">
-                {user?.role === "SUPERADMIN" ? "Super Admin" : "Basic Plan"}
+                {user?.role === "SUPERADMIN" ? "Super Admin" : "Basic"}
               </p>
             </div>
           )}
@@ -233,13 +232,11 @@ const AppSidebar: React.FC = () => {
         <Dropdown
           isOpen={isDropdownOpen}
           onClose={closeDropdown}
-          className={`absolute ${
-            isExpanded || isHovered || isMobileOpen
+          className={`absolute ${isExpanded || isHovered || isMobileOpen
               ? "right-4 left-4"
               : "left-4"
-          } bottom-full z-50 mb-2 flex flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-lg ${
-            !isExpanded && !isHovered && !isMobileOpen ? "w-[240px]" : ""
-          }`}
+            } bottom-full z-50 mb-2 flex flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-lg ${!isExpanded && !isHovered && !isMobileOpen ? "w-[240px]" : ""
+            }`}
         >
           <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-200">
