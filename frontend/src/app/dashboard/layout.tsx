@@ -5,6 +5,7 @@ import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
 import React from "react";
+import Link from "next/link";
 
 export default function AdminLayout({
   children,
@@ -34,6 +35,10 @@ export default function AdminLayout({
         {/* Page Content */}
         <div className="mx-auto w-full max-w-[1600px] p-4 md:p-8">
           {children}
+
+          <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            2025 - {new Date().getFullYear()} &copy; Kuizz, enhanced by <Link href="https://ewenrdo.fr/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Ewen Rodrigues de Oliveira</Link>
+          </div>
         </div>
       </div>
     </div>
