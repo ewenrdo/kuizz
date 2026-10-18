@@ -30,23 +30,18 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: <Grid size={20} />,
-    name: "Tableau de bord",
+    name: "Dashboard",
     path: "/dashboard",
   },
   {
     icon: <Gamepad2 size={20} />,
-    name: "Mes Quiz",
+    name: "My Quizzes",
     path: "/dashboard/quizes",
   },
   {
     icon: <BarChart2 size={20} />,
-    name: "Rapports",
+    name: "Reports",
     path: "/dashboard/reports",
-  },
-  {
-    name: "Utilisateurs",
-    icon: <Users size={20} />,
-    path: "/dashboard/users",
   },
   {
     icon: <Download size={20} />,
@@ -109,34 +104,30 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (navItems: NavItem[]) => (
     <ul className="flex flex-col gap-2">
-      {navItems
-        .filter(
-          (nav) => nav.name !== "Utilisateurs" || user?.role === "SUPERADMIN",
-        )
-        .map((nav) => (
-          <li key={nav.name}>
-            {nav.path && (
-              <Link
-                href={nav.path}
-                className={`flex items-center gap-3 rounded-xl px-4 py-2.5 transition-colors ${isActive(nav.path)
-                    ? "bg-[#F3E8FF] font-semibold text-[#46178f]"
-                    : "font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
+      {navItems.map((nav) => (
+        <li key={nav.name}>
+          {nav.path && (
+            <Link
+              href={nav.path}
+              className={`flex items-center gap-3 rounded-xl px-4 py-2.5 transition-colors ${isActive(nav.path)
+                ? "bg-[#F3E8FF] font-semibold text-[#46178f]"
+                : "font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`}
+            >
+              <span
+                className={
+                  isActive(nav.path) ? "text-[#46178f]" : "text-gray-500"
+                }
               >
-                <span
-                  className={
-                    isActive(nav.path) ? "text-[#46178f]" : "text-gray-500"
-                  }
-                >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="text-[15px]">{nav.name}</span>
-                )}
-              </Link>
-            )}
-          </li>
-        ))}
+                {nav.icon}
+              </span>
+              {(isExpanded || isHovered || isMobileOpen) && (
+                <span className="text-[15px]">{nav.name}</span>
+              )}
+            </Link>
+          )}
+        </li>
+      ))}
     </ul>
   );
 
@@ -179,8 +170,8 @@ const AppSidebar: React.FC = () => {
             <div>
               <h2
                 className={`mb-3 flex px-4 text-[11px] font-bold tracking-wider text-gray-400 uppercase ${!isExpanded && !isHovered
-                    ? "px-0 lg:justify-center"
-                    : "justify-start"
+                  ? "px-0 lg:justify-center"
+                  : "justify-start"
                   }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? "RESOURCES" : "•••"}
@@ -233,8 +224,8 @@ const AppSidebar: React.FC = () => {
           isOpen={isDropdownOpen}
           onClose={closeDropdown}
           className={`absolute ${isExpanded || isHovered || isMobileOpen
-              ? "right-4 left-4"
-              : "left-4"
+            ? "right-4 left-4"
+            : "left-4"
             } bottom-full z-50 mb-2 flex flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-lg ${!isExpanded && !isHovered && !isMobileOpen ? "w-[240px]" : ""
             }`}
         >
@@ -310,7 +301,7 @@ const AppSidebar: React.FC = () => {
                       d="M8 7a4 4 0 1 0 8 0A4 4 0 0 0 8 7m-4.243 9H20.243A7 7 0 0 0 8 14H8a7 7 0 0 0-4.243 2z"
                     />
                   </svg>
-                  Manajemen User
+                  User Management
                 </DropdownItem>
               </li>
             )}

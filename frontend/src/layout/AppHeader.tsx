@@ -1,13 +1,15 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/SidebarContext";
-import { Bell, Search } from "lucide-react";
+import { Bell, LogOut, Search } from "lucide-react";
+import { useRouter } from "next/dist/client/components/navigation";
 import Link from "next/link";
 import React, { useEffect, useRef } from "react";
+import { logout } from "@/lib/auth";
 
 const AppHeader: React.FC = () => {
   const { toggleSidebar, toggleMobileSidebar } = useSidebar();
-
+  const router = useRouter();
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
       toggleSidebar();
@@ -32,6 +34,12 @@ const AppHeader: React.FC = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+    async function handleLogout() {
+      await logout();
+      router.push("/login");
+    }
+  
 
   return (
     <header className="sticky top-0 z-40 flex h-[72px] w-full border-b border-gray-100 bg-white">
@@ -84,15 +92,19 @@ const AppHeader: React.FC = () => {
 
         {/* Right Section: Actions */}
         <div className="flex items-center gap-3 sm:gap-5">
-          {/* Notification Bell */}
+          {/* Notification Bell 
           <button className="relative rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100">
             <Bell size={20} />
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full border-2 border-white bg-red-500"></span>
+          </button>*/}
+
+          <button onClick={handleLogout} className="relative rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100">
+            <LogOut size={20} />
           </button>
 
           {/* Upgrade Button */}
-          <Button className="rounded-full bg-[#46178f] px-6 font-semibold text-white shadow-sm transition-all hover:bg-[#3b127a] hover:shadow-lg hover:shadow-[#46178f]/20">
-            Upgrade
+          <Button className="rounded-full bg-[#46178f] px-6 font-semibold text-white shadow-sm transition-all hover:bg-[#3b127a] hover:shadow-lg hover:shadow-[#46178f]/20" onClick={() => router.push("/")}>
+            Play
           </Button>
         </div>
       </div>
