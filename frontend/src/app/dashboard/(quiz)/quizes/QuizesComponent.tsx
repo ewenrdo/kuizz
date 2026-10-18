@@ -428,7 +428,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
             Quiz
           </h3>
           <p className="max-w-[150px] text-center text-sm font-medium text-gray-500">
-            Start from scratch or use AI generator
+            Start from scratch
           </p>
         </div>
 
