@@ -52,11 +52,6 @@ const navItems: NavItem[] = [
 
 const resourcesItems: NavItem[] = [
   {
-    icon: <Globe size={20} />,
-    name: "Paroisse",
-    path: "https://www.paroisse-enghien-saintgratien.com/",
-  },
-  {
     icon: <HelpCircle size={20} />,
     name: "Assistance",
     path: "/help",
