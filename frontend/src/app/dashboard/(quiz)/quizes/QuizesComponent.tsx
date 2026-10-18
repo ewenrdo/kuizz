@@ -10,7 +10,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,26 +40,55 @@ import {
   Table2,
   Trash2,
   Edit2,
+  Share2,
+  UserX,
+  UserPlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { socket } from "@/lib/socket";
 import { apiFetch, getAccessToken } from "@/lib/auth";
+import { AvatarModel } from "@/types";
+
+type QuizVisibility = "PRIVATE" | "SHARED" | "PUBLIC";
+
+type QuizAccess = {
+  id: string;
+  quizId: string;
+  userId: string;
+  user?: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
+  createdAt: string;
+};
 
 type Quiz = {
   id: string;
   title: string;
   description: string;
   status: "DRAFT" | "PUBLISHED";
+  visibility?: QuizVisibility;
   updatedAt: string;
   isFavorite: boolean;
+  ownerId?: string;
+  sharedWith?: QuizAccess[];
   _count: {
     gameSessions: number;
   };
   questions: { id: string }[];
 };
 
+type UserProfile = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  avatar: AvatarModel | null;
+  createdAt: string;
+};
 export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
   const router = useRouter();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -62,11 +99,39 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
   const [activeFilter, setActiveFilter] = useState("All Quizzes");
   const [activeSort, setActiveSort] = useState("Most Recent");
 
+  // State pour la modale de partage
+  const [shareQuizTarget, setShareQuizTarget] = useState<Quiz | null>(null);
+  const [shareEmail, setShareEmail] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
   useEffect(() => {
+    fetchQuizzes();
+  }, []);
+
+  const fetchQuizzes = () => {
     apiFetch(`/quiz`)
       .then((res) => res.json())
       .then((data) => setQuizzes(data));
+  };
+
+
+  useEffect(() => {
+    fetchProfile();
   }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await apiFetch("/users/me");
+      if (!res.ok) throw new Error();
+      const data: UserProfile = await res.json();
+      setUserId(data.id);
+    } catch {
+      toast.error("Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!deleteId || isDeleting) return;
@@ -74,19 +139,40 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
     try {
       setIsDeleting(true);
 
-      const res = await apiFetch(`/quiz/${deleteId}`, {
-        method: "DELETE",
-      });
+      const quiz = quizzes.find((q) => q.id === deleteId);
+      if (!quiz) {
+        toast.error("Quiz not found");
+        return;
+      }
 
-      if (!res.ok) throw new Error();
+      const isSharedWithMe = Boolean(userId && quiz.ownerId && quiz.ownerId !== userId);
 
+      if (isSharedWithMe) {
+        // Retirer mon propre accès au quiz partagé
+        const res = await apiFetch(`/quiz/${deleteId}/share/${userId}`, {
+          method: "DELETE",
+        });
+
+        if (!res.ok) throw new Error();
+
+        toast.success("Access revoked");
+      } else {
+        // Supprimer définitivement le quiz si je suis le propriétaire
+        const res = await apiFetch(`/quiz/${deleteId}`, {
+          method: "DELETE",
+        });
+
+        if (!res.ok) throw new Error();
+
+        toast.success("Quiz deleted");
+      }
+
+      // Mise à jour de l'état local et fermeture de la modale
       setQuizzes((prev) => prev.filter((q) => q.id !== deleteId));
-
-      toast.success("Quiz deleted");
       setOpenModal(false);
       setDeleteId(null);
     } catch {
-      toast.error("Failed to delete quiz");
+      toast.error("An error occurred while deleting");
     } finally {
       setIsDeleting(false);
     }
@@ -147,10 +233,64 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
     }
   };
 
+  const handleShareSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!shareQuizTarget || !shareEmail.trim() || isSharing) return;
+
+    try {
+      setIsSharing(true);
+      const res = await apiFetch(`/quiz/${shareQuizTarget.id}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: shareEmail.trim() }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to share quiz");
+      }
+
+      toast.success("Quiz shared successfully");
+      setShareEmail("");
+      fetchQuizzes();
+      setShareQuizTarget(null);
+    } catch (err: any) {
+      toast.error(err.message || "Error sharing quiz");
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleUnshareUser = async (quizId: string, targetUserId: string) => {
+    try {
+      const res = await apiFetch(`/quiz/${quizId}/share/${targetUserId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error();
+
+      toast.success("Access revoked");
+
+      setShareQuizTarget((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          sharedWith: prev.sharedWith?.filter((s) => s.userId !== targetUserId),
+        };
+      });
+
+      fetchQuizzes();
+    } catch {
+      toast.error("Failed to revoke access");
+    }
+  };
+
   const filteredQuizzes = quizzes.filter((q) => {
     if (activeFilter === "Favorites") return q.isFavorite;
     if (activeFilter === "Drafts") return q.status === "DRAFT";
-    if (activeFilter === "Shared with me") return false;
+    if (activeFilter === "Shared with me") {
+      return userId && q.ownerId && q.ownerId !== userId;
+    }
     return true;
   });
 
@@ -170,10 +310,15 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
   const renderQuizCard = (quiz: Quiz) => {
     // Determine visual treatment based on status
     const isPublished = quiz.status === "PUBLISHED";
+    const isSharedWithMe = userId && quiz.ownerId && quiz.ownerId !== userId;
+
     let statusBadgeClass = "";
     let cardGraphicClass = "";
 
-    if (isPublished) {
+    if (isSharedWithMe) {
+      statusBadgeClass = "bg-[#FBBF24] text-white tracking-wider";
+      cardGraphicClass = "bg-[#E6F3EF]";
+    } else if (isPublished) {
       statusBadgeClass = "bg-[#2ECC71] text-white tracking-wider";
       cardGraphicClass = "bg-[#E6F3EF]";
     } else {
@@ -230,24 +375,24 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
             <span
               className={`rounded-md px-2.5 py-1 text-[10px] font-bold uppercase ${statusBadgeClass}`}
             >
-              {isPublished ? "PUBLISHED" : "DRAFT"}
+              {isSharedWithMe ? "Shared with me" : isPublished ? "Published" : "Draft"}
             </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggleFavorite(quiz.id, quiz.isFavorite);
-              }}
-              className={`flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-sm transition-colors hover:bg-black/30 ${
-                quiz.isFavorite
+            {!isSharedWithMe && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleFavorite(quiz.id, quiz.isFavorite);
+                }}
+                className={`flex h-8 w-8 items-center justify-center rounded-full backdrop-blur-sm transition-colors hover:bg-black/30 ${quiz.isFavorite
                   ? "bg-red-500/90 text-white"
                   : "bg-black/20 text-white"
-              }`}
-            >
-              <Heart
-                size={16}
-                className={quiz.isFavorite ? "fill-current" : ""}
-              />
-            </button>
+                  }`}
+              >
+                <Heart
+                  size={16}
+                  className={quiz.isFavorite ? "fill-current" : ""}
+                />
+              </button>)}
           </div>
 
           {/* Questions absolute badge */}
@@ -273,6 +418,12 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                   onSelect={() => router.push(`/dashboard/quiz/${quiz.id}`)}
                 >
                   <Edit2 className="mr-2 h-4 w-4" /> Edit
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onSelect={() => setShareQuizTarget(quiz)}
+                >
+                  <Share2 className="mr-2 h-4 w-4 text-[#46178f]" /> Share
                 </DropdownMenuItem>
 
                 <DropdownMenuSub>
@@ -353,7 +504,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
   };
 
   const filterTabs = ["All Quizzes", "Favorites", "Shared with me", "Drafts"];
-
+  const isSharedWithMe = userId && deleteId && quizzes.find((q) => q.id === deleteId)?.ownerId !== userId;
   return (
     <div className="pb-24">
       {/* Header Area */}
@@ -371,11 +522,10 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
             <button
               key={tab}
               onClick={() => setActiveFilter(tab)}
-              className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${
-                activeFilter === tab
-                  ? "bg-[#111827] text-white shadow-md shadow-gray-900/10"
-                  : "border border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50"
-              }`}
+              className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${activeFilter === tab
+                ? "bg-[#111827] text-white shadow-md shadow-gray-900/10"
+                : "border border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50"
+                }`}
             >
               {tab}
             </button>
@@ -446,13 +596,95 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
         </button>
       </div>
 
+      {/* Modal Partage de Quiz */}
+      <Dialog
+        open={Boolean(shareQuizTarget)}
+        onOpenChange={(open: boolean) => !open && setShareQuizTarget(null)}
+      >
+        <DialogContent className="rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              Share "{shareQuizTarget?.title}"
+            </DialogTitle>
+            <DialogDescription className="text-gray-500">
+              Grant collaborators access to view and edit this quiz.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleShareSubmit} className="mt-2 space-y-4">
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="john.doe@kuizz.com"
+                value={shareEmail}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShareEmail(e.target.value)}
+                className="rounded-xl border-gray-200"
+                required
+              />
+              <Button
+                type="submit"
+                disabled={isSharing}
+                className="rounded-xl bg-[#46178f] font-bold text-white hover:bg-[#3b127a]"
+              >
+                <UserPlus size={16} className="mr-1.5" />
+                {isSharing ? "Sharing..." : "Invite"}
+              </Button>
+            </div>
+          </form>
+
+          <div className="mt-4">
+            <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
+              People with access
+            </h4>
+            <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+              {shareQuizTarget?.sharedWith && shareQuizTarget.sharedWith.length > 0 ? (
+                shareQuizTarget.sharedWith.map((access) => (
+                  <div
+                    key={access.id}
+                    className="flex items-center justify-between rounded-xl bg-gray-50 p-3 text-sm"
+                  >
+                    <div className="truncate pr-2">
+                      <p className="font-semibold text-gray-800">
+                        {access.user?.name || access.user?.email || "User"}
+                      </p>
+                      {access.user?.name && (
+                        <p className="text-xs text-gray-400">{access.user.email}</p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        shareQuizTarget &&
+                        handleUnshareUser(shareQuizTarget.id, access.userId)
+                      }
+                      className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
+                    >
+                      <UserX size={16} />
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <p className="py-2 text-center text-sm text-gray-400">
+                  Not shared with anyone yet.
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Suppression */}
       <AlertDialog open={openModal} onOpenChange={setOpenModal}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Quiz?</AlertDialogTitle>
+            <AlertDialogTitle>{isSharedWithMe ? "Quit Quiz ?" : "Delete Quiz ?"}</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-500">
-              This will permanently delete this quiz. Played quiz statistics
-              will remain.
+              {
+                isSharedWithMe
+                  ? "You will lose access to this quiz. You can ask the owner to share it again."
+                  : "This will permanently delete this quiz. Played quiz statistics will remain."
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4">
@@ -470,7 +702,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? (isSharedWithMe ? "Revoking..." : "Deleting...") : (isSharedWithMe ? "Quit Quiz" : "Delete Quiz")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
