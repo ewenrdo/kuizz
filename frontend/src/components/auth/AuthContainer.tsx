@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 const fredoka = Fredoka({ subsets: ["latin"], weight: ["500", "600", "700"] });
 
@@ -34,6 +35,7 @@ interface AuthContainerProps {
 }
 
 export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
+  const t = useTranslations("Auth");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -51,7 +53,7 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
     e.preventDefault();
 
     if (!isLogin && password.length < 6) {
-      toast.error("Password minimal 6 karakter");
+      toast.error(t("passwordMinLength"));
       return;
     }
 
@@ -59,11 +61,11 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
     try {
       if (isLogin) {
         await login(email, password);
-        toast.success("Login berhasil!");
+        toast.success(t("loginSuccess"));
         router.push(redirectTo);
       } else {
         await register(email, password, name || undefined);
-        toast.success("Akun berhasil dibuat!");
+        toast.success(t("registerSuccess"));
         router.push("/dashboard");
       }
     } catch (err) {
@@ -71,8 +73,8 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
         err instanceof Error
           ? err.message
           : isLogin
-            ? "Login gagal"
-            : "Registrasi gagal",
+            ? t("loginFailed")
+            : t("registrationFailed"),
       );
     } finally {
       setLoading(false);
@@ -98,7 +100,7 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
               {/* Character placeholder */}
               <Image
                 src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=transparent"
-                alt="Illustration"
+                alt={t("illustrationAlt")}
                 width={160}
                 height={160}
                 className="object-cover"
@@ -108,10 +110,10 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
             <h2
               className={`${fredoka.className} mb-4 text-3xl font-bold md:text-4xl`}
             >
-              Ready for a challenge?
+              {t("challenge")}
             </h2>
             <p className="mb-8 max-w-[250px] text-sm leading-relaxed text-[#D6C5F3] md:text-base">
-              Join the world&apos;s most engaging learning game community!
+              {t("community")}
             </p>
 
             <div className="flex gap-2">
@@ -130,13 +132,13 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
               href="/login"
               className={`flex-1 rounded-lg py-2.5 text-center text-sm font-bold transition-all ${isLogin ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
-              Log In
+              {t("logIn")}
             </Link>
             <Link
               href="/register"
               className={`flex-1 rounded-lg py-2.5 text-center text-sm font-bold transition-all ${!isLogin ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
-              Sign Up
+              {t("signUp")}
             </Link>
           </div>
 
@@ -144,20 +146,20 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
             <h1
               className={`${fredoka.className} mb-2 flex items-center gap-2 text-3xl font-bold text-gray-900`}
             >
-              {isLogin ? "Welcome back!" : "Create an account"}
+              {isLogin ? t("welcomeBack") : t("createAccount")}
               <span>{isLogin ? "👋" : "✨"}</span>
             </h1>
             <p className="mb-8 text-sm text-gray-500">
               {isLogin
-                ? "Please enter your details to sign in."
-                : "Enter your details to get started."}
+                ? t("loginDescription")
+                : t("registerDescription")}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {!isLogin && (
                 <div>
                   <label className="mb-1.5 block text-sm font-bold text-gray-700">
-                    Name (optional)
+                    {t("nameOptional")}
                   </label>
                   <div className="relative flex items-center">
                     <User2Icon className="absolute left-4 text-[20px] text-gray-400" />
@@ -165,7 +167,7 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="John Doe"
+                      placeholder={t("namePlaceholder")}
                       className="w-full rounded-xl border border-transparent bg-[#F8F9FA] py-3 pr-4 pl-11 text-sm font-medium text-gray-800 transition-all outline-none placeholder:text-gray-400 focus:border-[#46178F] focus:bg-white focus:ring-2 focus:ring-[#46178F]/20"
                     />
                   </div>
@@ -174,7 +176,7 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
 
               <div>
                 <label className="mb-1.5 block text-sm font-bold text-gray-700">
-                  {isLogin ? "Username or Email" : "Email"}
+                  {isLogin ? t("usernameOrEmail") : t("email")}
                 </label>
                 <div className="relative flex items-center">
                   <User2Icon className="absolute left-4 text-[20px] text-gray-400" />
@@ -183,7 +185,7 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Start typing..."
+                    placeholder={t("typingPlaceholder")}
                     className="w-full rounded-xl border border-transparent bg-[#F8F9FA] py-3 pr-4 pl-11 text-sm font-medium text-gray-800 transition-all outline-none placeholder:text-gray-400 focus:border-[#46178F] focus:bg-white focus:ring-2 focus:ring-[#46178F]/20"
                   />
                 </div>
@@ -191,7 +193,7 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
 
               <div>
                 <label className="mb-1.5 block text-sm font-bold text-gray-700">
-                  Password
+                  {t("password")}
                 </label>
                 <div className="relative flex items-center">
                   <Lock className="absolute left-4 text-[20px] text-gray-400" />
@@ -252,7 +254,7 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
                 <div className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-[10px] font-bold tracking-wider uppercase">
-                <span className="bg-white px-3 text-gray-400">OR</span>
+                <span className="bg-white px-3 text-gray-400">{t("or")}</span>
               </div>
             </div>
 
@@ -328,10 +330,10 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
               <ShieldAlert size={24} />
             </div>
             <DialogTitle className="text-xl font-bold">
-              Unable to reset password
+              {t("unableResetPassword")}
             </DialogTitle>
             <DialogDescription className="mt-2 text-center text-sm text-gray-600">
-              Resetting your password is not yet enabled on this platform. Please contact an administrator to migrate your account if you lost your password. We apologize for the inconvenience and appreciate your understanding.
+              {t("resetPasswordDescription")}
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4 flex justify-end">
@@ -339,7 +341,7 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
               onClick={() => setShowForgotPasswordModal(false)}
               className="w-full rounded-xl bg-[#46178F] font-bold text-white hover:bg-[#34116c]"
             >
-              J'ai compris
+              {t("understood")}
             </Button>
           </div>
         </DialogContent>

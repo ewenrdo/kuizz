@@ -31,6 +31,7 @@ import { nanoid } from "nanoid";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { QuestionModelType, QuizModelType } from "@/types";
+import { useTranslations } from "next-intl";
 
 const colorPalette = [
   { color: "bg-red-600", icon: "triangle" },
@@ -209,6 +210,7 @@ export function SharedQuizEditor({
   isSaving,
   onSave,
 }: SharedQuizEditorProps) {
+  const t = useTranslations("QuizEditor");
   const router = useRouter();
   const [quizTitle, setQuizTitle] = useState(initialTitle);
   const [quizDescription, setQuizDescription] = useState(initialDescription);
@@ -333,7 +335,7 @@ export function SharedQuizEditor({
     const answers = updated[activeIndex].options;
 
     if (answers.length >= 6) {
-      toast.error("Maximum 6 answers allowed");
+      toast.error(t("maxAnswers"));
       return;
     }
 
@@ -354,7 +356,7 @@ export function SharedQuizEditor({
     const updated = structuredClone(questions);
 
     if (updated[activeIndex].options.length <= 2) {
-      toast.error("Minimum 2 answers required");
+      toast.error(t("minAnswers"));
       return;
     }
 
@@ -404,7 +406,7 @@ export function SharedQuizEditor({
 
   function deleteQuestion(index: number) {
     if (questions.length <= 1) {
-      toast.error("At least one question required");
+      toast.error(t("minQuestions"));
       return;
     }
 
@@ -420,7 +422,7 @@ export function SharedQuizEditor({
     if (status === "PUBLISHED") {
       for (const q of questions) {
         if (!q.text.trim()) {
-          toast.error("Each question must have text before publishing");
+          toast.error(t("questionTextRequired"));
           return;
         }
 
@@ -429,14 +431,14 @@ export function SharedQuizEditor({
         );
 
         if (validAnswers.length < 2) {
-          toast.error("Each question must have at least 2 answers to publish");
+          toast.error(t("twoAnswersRequired"));
           return;
         }
 
         if (
           !validAnswers.some((a: (typeof initialAnswers)[0]) => a.isCorrect)
         ) {
-          toast.error("Each question must have at least 1 correct answer");
+          toast.error(t("correctAnswerRequired"));
           return;
         }
       }
@@ -482,7 +484,7 @@ export function SharedQuizEditor({
               onChange={(e) => {
                 setQuizTitle(e.target.value);
               }}
-              placeholder="Enter quiz title..."
+              placeholder={t("quizTitlePlaceholder")}
               className="rounded bg-transparent px-1 text-sm font-bold transition placeholder:text-gray-500 focus:ring-1 focus:ring-purple-500/50 focus:outline-none"
             />
             <input
@@ -490,7 +492,7 @@ export function SharedQuizEditor({
               onChange={(e) => {
                 setQuizDescription(e.target.value);
               }}
-              placeholder="Add a description..."
+              placeholder={t("descriptionPlaceholder")}
               className="rounded bg-transparent px-1 text-[11px] text-gray-400 transition placeholder:text-gray-600 focus:ring-1 focus:ring-purple-500/50 focus:outline-none"
             />
           </div>
@@ -502,7 +504,7 @@ export function SharedQuizEditor({
             size="sm"
             className="h-9 rounded-full bg-gray-800 px-4 text-sm font-medium text-gray-200 hover:bg-gray-700 hover:text-white"
           >
-            <Eye className="mr-2" size={16} /> Preview
+            <Eye className="mr-2" size={16} /> {t("preview")}
           </Button>
           <Button
             variant="outline"
@@ -510,14 +512,14 @@ export function SharedQuizEditor({
             disabled={isSaving}
             className="h-9 rounded-full border-gray-600 bg-transparent font-medium text-gray-300 hover:bg-gray-800 hover:text-white"
           >
-            Save Draft
+            {t("saveDraft")}
           </Button>
           <Button
             onClick={() => triggerSave("PUBLISHED")}
             disabled={isSaving}
             className="h-9 rounded-full bg-purple-600 px-6 font-medium text-white hover:bg-purple-700"
           >
-            Publish
+            {t("publish")}
           </Button>
         </div>
       </header>
@@ -526,7 +528,7 @@ export function SharedQuizEditor({
         {/* Left Sidebar - Questions */}
         <aside className="flex w-56 flex-col overflow-hidden border-r border-gray-800 bg-[#1a0f26] pt-4">
           <div className="flex shrink-0 items-center justify-between px-4 pb-2 text-xs font-bold tracking-wider text-gray-400">
-            QUESTIONS ({questions.length})
+            {t("questions", { count: questions.length })}
             <GripVertical size={14} className="opacity-50" />
           </div>
 
@@ -575,7 +577,7 @@ export function SharedQuizEditor({
                     variant="outline"
                     className="h-10 w-full rounded-full border border-dashed border-gray-700 bg-transparent font-medium text-gray-300 hover:bg-gray-800"
                   >
-                    <Plus size={16} className="mr-2" /> Add Question
+                    <Plus size={16} className="mr-2" /> {t("addQuestion")}
                   </Button>
                 </div>
               </div>
@@ -592,7 +594,7 @@ export function SharedQuizEditor({
                 className="w-full rounded-xl bg-transparent p-4 text-center text-4xl font-bold text-white transition-colors placeholder:text-gray-600 focus:bg-[#1a0f26]/50 focus:outline-none"
                 value={currentQuestion.text}
                 onChange={(e) => updateQuestionField("text", e.target.value)}
-                placeholder="Start typing your question"
+                placeholder={t("questionPlaceholder")}
               />
             </div>
 
@@ -632,7 +634,7 @@ export function SharedQuizEditor({
               <div className="relative flex h-full w-full max-w-2xl cursor-not-allowed flex-col items-center justify-center gap-4 overflow-hidden rounded-3xl border-2 border-dashed border-purple-500/30 bg-[#1c1228]/20 p-6 opacity-75 backdrop-blur-xs">
                 {/* Badge Coming Soon */}
                 <div className="absolute top-4 right-4 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-400 border border-purple-500/20">
-                  Coming Soon
+                  {t("comingSoon")}
                 </div>
 
                 {/* Icone avec effet visuel d'attente */}
@@ -643,7 +645,7 @@ export function SharedQuizEditor({
                 {/* Textes explicites */}
                 <div className="text-center">
                   <h3 className="mb-1 text-xl font-bold text-white/80">
-                    Media library in development
+                    {t("mediaLibraryDevelopment")}
                   </h3>
                   <p className="text-sm text-gray-400">
                     Finding and inserting media (images, Giphy) will be available soon.
@@ -689,7 +691,7 @@ export function SharedQuizEditor({
                       <input
                         value={a.text}
                         onChange={(e) => updateAnswer(a.id, e.target.value)}
-                        placeholder="Add answer..."
+                        placeholder={t("answerPlaceholder")}
                         className="w-full bg-transparent text-lg font-bold text-white placeholder:text-white/40 focus:outline-none"
                       />
                     </div>
@@ -783,11 +785,11 @@ export function SharedQuizEditor({
                     }
                     className="w-full appearance-none rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none"
                   >
-                    <option value={5}>5 seconds</option>
-                    <option value={10}>10 seconds</option>
-                    <option value={20}>20 seconds</option>
-                    <option value={30}>30 seconds</option>
-                    <option value={60}>1 minute</option>
+                    <option value={5}>{t("seconds", { count: 5 })}</option>
+                    <option value={10}>{t("seconds", { count: 10 })}</option>
+                    <option value={20}>{t("seconds", { count: 20 })}</option>
+                    <option value={30}>{t("seconds", { count: 30 })}</option>
+                    <option value={60}>{t("minute")}</option>
                   </select>
                 </div>
               </div>
@@ -814,8 +816,8 @@ export function SharedQuizEditor({
                   className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-gray-700 accent-purple-500"
                 />
                 <div className="flex justify-between text-[10px] text-gray-500">
-                  <span>Standard</span>
-                  <span>Double</span>
+                  <span>{t("standard")}</span>
+                  <span>{t("double")}</span>
                 </div>
               </div>
 
@@ -832,8 +834,8 @@ export function SharedQuizEditor({
                     }
                     className="w-full appearance-none rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none"
                   >
-                    <option value="Single Select">Single Select</option>
-                    <option value="Multi Select">Multi Select</option>
+                    <option value="Single Select">{t("singleSelect")}</option>
+                    <option value="Multi Select">{t("multiSelect")}</option>
                   </select>
                 </div>
               )}

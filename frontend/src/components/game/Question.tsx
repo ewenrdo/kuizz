@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Triangle, Diamond, Circle, Square } from "lucide-react";
 import LiveSync from "./LiveSync";
 import Avatar from "@/components/avatar/Avatar";
@@ -45,6 +46,7 @@ export default function Question({
   remainingMs,
   onSelect,
 }: QuestionProps) {
+  const t = useTranslations("Game");
   const [selected, setSelected] = useState<string | null>(null);
 
   // Timer calculation
@@ -232,7 +234,7 @@ export default function Question({
           </div>
           <div className="flex flex-col">
             <span className="text-[7px] font-bold tracking-widest text-gray-400 md:text-[9px]">
-              PLAYER
+              {t("player")}
             </span>
             <span className="text-xs font-bold text-gray-900 md:text-base">
               {playerName}
@@ -242,7 +244,7 @@ export default function Question({
 
         <div className="flex flex-1 flex-col items-center gap-1 px-4 md:w-64 md:flex-initial md:gap-1.5 md:px-0">
           <div className="flex w-full items-center justify-between text-[8px] font-bold tracking-widest text-gray-400 md:text-[10px]">
-            <span>PROGRESS</span>
+            <span>{t("progress")}</span>
             <span>{Math.round(gameProgress)}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 md:h-2">

@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useRef } from "react";
+import { useLocale, useTranslations } from "next-intl";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -38,6 +39,8 @@ export const metadata: Metadata = {
 };
 
 export default function LandingPage() {
+  const locale = useLocale();
+  const t = useTranslations("LandingPage");
   const pinRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -47,8 +50,13 @@ export default function LandingPage() {
     if (pin && /^\d+$/.test(pin))
       router.push(`/join?roomId=${pin}`);
     else
-      toast.error("Please enter a valid Game PIN.");
+      toast.error(t("hero.invalidPin"));
   }
+
+  const handleLanguageChange = () => {
+    document.cookie = `NEXT_LOCALE=${locale === "fr" ? "en" : "fr"}; path=/; max-age=31536000`;
+    router.refresh();
+  };
 
   return (
     <>
@@ -104,19 +112,19 @@ export default function LandingPage() {
               className="transition-colors hover:text-[var(--accent)]"
               href="#"
             >
-              Play
+              {t("navigation.play")}
             </Link>
             <Link
               className="transition-colors hover:text-[var(--accent)]"
               href="#"
             >
-              Explore
+              {t("navigation.explore")}
             </Link>
             <Link
               className="transition-colors hover:text-[var(--accent)]"
               href="/dashboard"
             >
-              Create
+              {t("navigation.create")}
             </Link>
           </div>
           <div className="flex gap-4">
@@ -124,13 +132,13 @@ export default function LandingPage() {
               className="hidden rounded-full border-2 border-white px-5 py-2 font-bold transition-colors hover:bg-white hover:text-[var(--primary)] md:block"
               href="/login"
             >
-              Log in
+              {t("navigation.logIn")}
             </Link>
             <Link
               className="btn-shadow rounded-full bg-[var(--accent)] px-5 py-2 font-bold text-[var(--primary)] transition-colors hover:bg-[var(--accent-hover)]"
               href="/register"
             >
-              Sign up
+              {t("navigation.signUp")}
             </Link>
           </div>
         </nav>
@@ -143,31 +151,30 @@ export default function LandingPage() {
           <div className="relative z-10 container mx-auto grid items-center gap-12 md:grid-cols-2">
             <div className="text-center md:text-left">
               <h1 className="mb-6 text-5xl leading-tight font-bold md:text-7xl">
-                Make learning <br />
-                <span className="text-[var(--accent)]">awesome!</span>
+                {t("hero.title")} <br />
+                <span className="text-[var(--accent)]">{t("hero.titleAccent")}</span>
               </h1>
               <p className="mx-auto mb-8 max-w-lg text-xl text-gray-200 md:mx-0 md:text-2xl">
-                Host live quizzes, compete with friends, and master any subject
-                in real-time.
+                {t("hero.description")}
               </p>
               <div className="mx-auto flex max-w-md flex-col gap-2 rounded-2xl bg-white p-2 shadow-xl md:mx-0 md:flex-row">
                 <input
                   className="flex-grow rounded-xl border-none bg-gray-100 px-6 py-4 text-center text-2xl font-bold text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-[var(--secondary)] md:text-left"
-                  placeholder="Game PIN"
+                  placeholder={t("hero.gamePinPlaceholder")}
                   type="text"
                   ref={pinRef}
                 />
                 <button className="btn-shadow rounded-xl bg-[var(--text-dark)] px-8 py-4 text-xl font-bold whitespace-nowrap text-white transition-colors hover:bg-black" onClick={handleJoinGame}>
-                  Join Game
+                  {t("hero.joinGame")}
                 </button>
               </div>
               <div className="mt-6">
-                <span className="text-sm opacity-80">Or want to host?</span>
+                <span className="text-sm opacity-80">{t("hero.hostPrompt")}</span>
                 <Link
                   className="ml-2 font-bold underline decoration-[var(--accent)] decoration-4 underline-offset-4 transition-colors hover:text-[var(--accent)]"
                   href="/dashboard"
                 >
-                  Create your own quiz
+                  {t("hero.createQuiz")}
                 </Link>
               </div>
             </div>
@@ -178,13 +185,13 @@ export default function LandingPage() {
                     <Medal className="text-white" size={64} />
                   </div>
                   <div className="mt-28 text-center">
-                    <h3 className="mb-2 text-2xl font-bold">Weekly Trivia</h3>
+                    <h3 className="mb-2 text-2xl font-bold">{t("preview.title")}</h3>
                     <div className="mb-6 flex justify-center gap-2">
                       <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-700">
-                        12 Questions
+                        {t("preview.questions", { count: 12 })}
                       </span>
                       <span className="rounded-full bg-purple-100 px-3 py-1 text-sm font-bold text-purple-700">
-                        Live
+                        {t("preview.live")}
                       </span>
                     </div>
                     <div className="space-y-3">
@@ -192,13 +199,13 @@ export default function LandingPage() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500 font-bold text-white">
                           A
                         </div>
-                        <span className="text-lg font-bold">Mount Everest</span>
+                        <span className="text-lg font-bold">{t("preview.firstAnswer")}</span>
                       </div>
                       <div className="flex items-center gap-3 rounded-xl border-l-8 border-blue-500 bg-gray-100 p-4">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 font-bold text-white">
                           B
                         </div>
-                        <span className="text-lg font-bold">K2</span>
+                        <span className="text-lg font-bold">{t("preview.secondAnswer")}</span>
                       </div>
                     </div>
                   </div>
@@ -209,7 +216,7 @@ export default function LandingPage() {
               </div>
               <div className="absolute bottom-20 left-10 -rotate-6 rounded-2xl bg-white p-4 shadow-lg">
                 <span className="text-xl font-bold text-[var(--primary)]">
-                  4,250 pts
+                  {t("preview.points", { count: "4,250" })}
                 </span>
               </div>
             </div>
@@ -219,7 +226,7 @@ export default function LandingPage() {
         <section className="relative z-20 -mt-16 rounded-t-[50px] bg-white py-20">
           <div className="container mx-auto px-6">
             <h2 className="mb-16 text-center text-4xl font-bold text-[var(--primary)]">
-              How Kuizz Works
+              {t("howItWorks.title")}
             </h2>
             <div className="grid gap-12 md:grid-cols-3">
               <div className="group text-center">
@@ -227,11 +234,10 @@ export default function LandingPage() {
                   <FilePenLine className="text-primary" size={64} />
                 </div>
                 <h3 className="mb-3 text-2xl font-bold text-gray-800">
-                  1. Create
+                  {t("howItWorks.createTitle")}
                 </h3>
                 <p className="px-4 text-gray-600">
-                  Build your own quizzes in minutes with our intuitive editor.
-                  Add images, multiple choice, and custom timers.
+                  {t("howItWorks.createDescription")}
                 </p>
               </div>
               <div className="group text-center">
@@ -239,11 +245,10 @@ export default function LandingPage() {
                   <Lectern className="text-primary" size={64} />
                 </div>
                 <h3 className="mb-3 text-2xl font-bold text-gray-800">
-                  2. Host
+                  {t("howItWorks.hostTitle")}
                 </h3>
                 <p className="px-4 text-gray-600">
-                  Launch a live game on a big screen. Players join using their
-                  phones with a unique PIN code.
+                  {t("howItWorks.hostDescription")}
                 </p>
               </div>
               <div className="group text-center">
@@ -251,11 +256,10 @@ export default function LandingPage() {
                   <PartyPopper className="text-primary" size={64} />
                 </div>
                 <h3 className="mb-3 text-2xl font-bold text-gray-800">
-                  3. Play
+                  {t("howItWorks.playTitle")}
                 </h3>
                 <p className="px-4 text-gray-600">
-                  Answer questions on your device. The faster you answer, the
-                  more points you get. Aim for the podium!
+                  {t("howItWorks.playDescription")}
                 </p>
               </div>
             </div>
@@ -267,17 +271,17 @@ export default function LandingPage() {
             <div className="mb-12 flex items-end justify-between">
               <div>
                 <h2 className="mb-2 text-4xl font-bold text-[var(--text-dark)]">
-                  Featured Quizzes
+                  {t("featured.title")}
                 </h2>
                 <p className="text-lg text-gray-600">
-                  Top picks for you to play right now
+                  {t("featured.description")}
                 </p>
               </div>
               <Link
                 className="text-secondary hidden items-center gap-1 font-bold hover:underline md:flex"
                 href="#"
               >
-                See all
+                {t("featured.seeAll")}
                 <MoveRight className="text-secondary" />
               </Link>
             </div>
@@ -285,52 +289,40 @@ export default function LandingPage() {
               {[
                 {
                   id: 1,
-                  subject: "Science",
+                  subjectKey: "science",
                   subjectColorClass: "text-purple-600 bg-purple-100",
                   icon: <Microscope size={64} className="text-white" />,
                   questions: 15,
-                  title: "General Science Trivia",
-                  desc: "Test your knowledge on physics, biology and more.",
-                  author: "Dr. Science",
                   bgGradient: "from-purple-500 to-indigo-600",
                   imgSrc:
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuB5G6DFltrFrY2u5-vdiYJMWJe0I0IzoPVwRRhi0UM8ci1GlooQE-xDbEa2DrymV88YE1vvHmRq1DO4ZtuNFQrArCcRdbbz6cbUQsG1zpMFBIZUT_LiOUSrF6j9eaynPmE7vJLTywjQmWKRzVW55cfzK7NzDubycKCEhP_3qZQjGHKIALqvWg7qWTmDVxkVUalNow7Ue3C_aq3UAH09Isua0uEpfMmv7yyvJfPFxlzpU_cufzSUX13hSGqjGvB1xImf4hjlWEN1TYpS",
                 },
                 {
                   id: 2,
-                  subject: "Movies",
+                  subjectKey: "movies",
                   subjectColorClass: "text-pink-600 bg-pink-100",
                   icon: <Clapperboard size={64} className="text-white" />,
                   questions: 10,
-                  title: "90s Cinema Classics",
-                  desc: "How well do you remember the golden era of film?",
-                  author: "MovieBuff99",
                   bgGradient: "from-pink-500 to-rose-600",
                   imgSrc:
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuDFAI5QArmznnkLyNMgl9hGC6rsdCbNaWvXHlUbjH6m8VLfSHGvme090ByPT-nu9UN1dZOsujrF55JolTXooU_kMBo3mql2c8fIU3-PEAa-OF9ImAtNZ88CnwWALo0Lxjpr1Xk_JgBtyNw4HMltULihXuJOKXyYQXavyLc7ZMj1MqIjUje7n6S21_pWzii0M22ThBBpW34Ec6T5gagPrX9SUbB1UjHcSskr0lKivNkazYRsTU0WWTQMWPGmu9dilo31KbVqjcg6FSo_",
                 },
                 {
                   id: 3,
-                  subject: "Geography",
+                  subjectKey: "geography",
                   subjectColorClass: "text-teal-600 bg-teal-100",
                   icon: <Earth size={64} className="text-white" />,
                   questions: 20,
-                  title: "World Capitals",
-                  desc: "Can you name the capital of every country?",
-                  author: "GeoMaster",
                   bgGradient: "from-teal-400 to-green-500",
                   imgSrc:
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuA7IaG5aloOen6YoG_EnQvtcS0JmMJFv4ixbQ_7qywkjDIkf4EtUcFCfzsqEfzADA-uxFLpAp9xcjnFcGLBTGXbXyjWS_OLbA82YGE9FVwNNKXAGVkTzBzMgxrKDIVloanPjLe_jNtuwItbA1VfpxwEBpWRb7wCZ5UYHC3LHZtSH7H9oozLJoelaKegCx3Udpb46_7DDjoYyNRYwX3job56whAWVnaTe5O-XZ47137rp75xqK05rdfTo0ukwgXNYo2vBHMHiVZPnCzZ",
                 },
                 {
                   id: 4,
-                  subject: "Animals",
+                  subjectKey: "animals",
                   subjectColorClass: "text-orange-600 bg-orange-100",
                   icon: <PawPrint size={64} className="text-white" />,
                   questions: 8,
-                  title: "Cute Animals 101",
-                  desc: "Identify these adorable creatures.",
-                  author: "PetLover",
                   bgGradient: "from-yellow-400 to-orange-500",
                   imgSrc:
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuAWuyC8s6hhTll9Rp1GGghR2FDqmuhCz6guE_9CsAKVXsFYa58QrJ3fczEAhB70Hn0sBc6Ew2Tnbz2fRMY-WtTT8Nb_BlcguTODAIZELm-pIPpZ3v24t2ZZavAZhAmzaNVTeyyCIyJ9coZjq5p-vfXyYM3G9V-N4QrkTvcozlmu9mRMmKr4F04AMl75ISEBK3q1oiZkvzCRF9oGJL4HgvUNxZQVfMg8eXOcGwSlbcD4g8mm0SLuNnghXJ_Cja8Mm7OZzd3MZA0BHp5Z",
@@ -350,31 +342,33 @@ export default function LandingPage() {
                       <span
                         className={`text-xs font-bold tracking-wider uppercase ${quiz.subjectColorClass} rounded-md px-2 py-1`}
                       >
-                        {quiz.subject}
+                        {t(`quizzes.${quiz.subjectKey}.subject`)}
                       </span>
                       <div className="flex items-center rounded-md bg-gray-100 px-2 py-1 text-sm text-gray-500">
                         <CircleQuestionMark
                           className="mr-1 text-base"
                           size={16}
                         />{" "}
-                        {quiz.questions}
+                        {t("featured.questions", { count: quiz.questions })}
                       </div>
                     </div>
                     <h3 className="mb-1 text-lg font-bold transition-colors group-hover:text-[var(--primary)]">
-                      {quiz.title}
+                      {t(`quizzes.${quiz.subjectKey}.title`)}
                     </h3>
-                    <p className="mb-4 text-sm text-gray-500">{quiz.desc}</p>
+                    <p className="mb-4 text-sm text-gray-500">
+                      {t(`quizzes.${quiz.subjectKey}.description`)}
+                    </p>
                     <div className="flex items-center gap-2">
                       <div className="h-8 w-8 overflow-hidden rounded-full bg-gray-200">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          alt="User"
+                          alt={t("footer.userAvatarAlt")}
                           className="h-full w-full object-cover"
                           src={quiz.imgSrc}
                         />
                       </div>
                       <span className="text-sm font-semibold text-gray-700">
-                        {quiz.author}
+                        {t(`quizzes.${quiz.subjectKey}.author`)}
                       </span>
                     </div>
                   </div>
@@ -383,7 +377,7 @@ export default function LandingPage() {
             </div>
             <div className="mt-8 text-center md:hidden">
               <button className="rounded-full border-2 border-[var(--secondary)] bg-white px-6 py-2 font-bold text-[var(--secondary)]">
-                See all quizzes
+                {t("featured.seeAllQuizzes")}
               </button>
             </div>
           </div>
@@ -400,15 +394,14 @@ export default function LandingPage() {
             ></div>
             <div className="relative z-10">
               <h2 className="mb-6 text-3xl font-bold md:text-5xl">
-                Ready to create your own game?
+                {t("cta.title")}
               </h2>
               <p className="mx-auto mb-10 max-w-2xl text-xl text-purple-200 md:text-2xl">
-                Join thousands of teachers, students, and quiz enthusiasts
-                creating awesome learning experiences.
+                {t("cta.description")}
               </p>
               <Link href="/register">
                 <button className="btn-shadow rounded-full bg-[var(--accent)] px-10 py-4 text-xl font-bold text-[var(--primary)] transition-colors hover:bg-[var(--accent-hover)]">
-                  Get Started for Free
+                  {t("cta.button")}
                 </button>
               </Link>
             </div>
@@ -424,19 +417,18 @@ export default function LandingPage() {
                   <span className="logo-font text-2xl font-bold">Kuizz</span>
                 </div>
                 <p className="text-sm leading-relaxed text-purple-300">
-                  A real-time, interactive multiplayer quiz application for fun
-                  learning and assessment.
+                  {t("footer.description")}
                 </p>
               </div>
               <div>
-                <h4 className="mb-4 text-lg font-bold">Discover</h4>
+                <h4 className="mb-4 text-lg font-bold">{t("footer.discover")}</h4>
                 <ul className="space-y-2 text-purple-200">
                   <li>
                     <Link
                       className="transition-colors hover:text-white"
                       href="#"
                     >
-                      Featured
+                      {t("footer.featured")}
                     </Link>
                   </li>
                   <li>
@@ -444,7 +436,7 @@ export default function LandingPage() {
                       className="transition-colors hover:text-white"
                       href="#"
                     >
-                      Search
+                      {t("footer.search")}
                     </Link>
                   </li>
                   <li>
@@ -452,20 +444,20 @@ export default function LandingPage() {
                       className="transition-colors hover:text-white"
                       href="#"
                     >
-                      Categories
+                      {t("footer.categories")}
                     </Link>
                   </li>
                 </ul>
               </div>
               <div>
-                <h4 className="mb-4 text-lg font-bold">About</h4>
+                <h4 className="mb-4 text-lg font-bold">{t("footer.about")}</h4>
                 <ul className="space-y-2 text-purple-200">
                   <li>
                     <Link
                       className="transition-colors hover:text-white"
                       href="#"
                     >
-                      Our Story
+                      {t("footer.ourStory")}
                     </Link>
                   </li>
                   <li>
@@ -473,7 +465,7 @@ export default function LandingPage() {
                       className="transition-colors hover:text-white"
                       href="#"
                     >
-                      Careers
+                      {t("footer.careers")}
                     </Link>
                   </li>
                   <li>
@@ -481,20 +473,20 @@ export default function LandingPage() {
                       className="transition-colors hover:text-white"
                       href="#"
                     >
-                      Blog
+                      {t("footer.blog")}
                     </Link>
                   </li>
                 </ul>
               </div>
               <div>
-                <h4 className="mb-4 text-lg font-bold">Help</h4>
+                <h4 className="mb-4 text-lg font-bold">{t("footer.help")}</h4>
                 <ul className="space-y-2 text-purple-200">
                   <li>
                     <Link
                       className="transition-colors hover:text-white"
                       href="#"
                     >
-                      Support Center
+                      {t("footer.supportCenter")}
                     </Link>
                   </li>
                   <li>
@@ -502,7 +494,7 @@ export default function LandingPage() {
                       className="transition-colors hover:text-white"
                       href="#"
                     >
-                      Contact Us
+                      {t("footer.contactUs")}
                     </Link>
                   </li>
                   <li>
@@ -510,7 +502,7 @@ export default function LandingPage() {
                       className="transition-colors hover:text-white"
                       href="#"
                     >
-                      Terms of Service
+                      {t("footer.terms")}
                     </Link>
                   </li>
                 </ul>
@@ -518,7 +510,7 @@ export default function LandingPage() {
             </div>
             <div className="flex flex-col items-center justify-between gap-4 border-t border-purple-900 pt-8 text-sm text-purple-400 md:flex-row">
               <p>
-                © {new Date().getFullYear()} Kuizz Inc. All rights reserved.
+                {t("footer.copyright", { year: new Date().getFullYear() })}
               </p>
               <div className="flex gap-4">
                 <Link className="hover:text-white" href="#">
@@ -527,6 +519,13 @@ export default function LandingPage() {
                 <Link className="hover:text-white" href="#">
                   <Mail size={24} />
                 </Link>
+                <button
+                  className="font-semibold hover:text-white"
+                  onClick={handleLanguageChange}
+                  type="button"
+                >
+                  {t("footer.switchLanguage")}
+                </button>
               </div>
             </div>
           </div>

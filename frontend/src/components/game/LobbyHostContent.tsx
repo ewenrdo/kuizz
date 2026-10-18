@@ -13,6 +13,7 @@ import {
 import { Button } from "../ui/button";
 import { socket } from "@/lib/socket";
 import { AvatarModel, PlayerModel } from "@/types";
+import { useTranslations } from "next-intl";
 
 interface LobbyContentInterface {
   joinCode: string;
@@ -25,6 +26,7 @@ export default function LobbyContent({
   players,
   initialIsLocked = false,
 }: LobbyContentInterface) {
+  const t = useTranslations("Game");
   const [isLocked, setIsLocked] = useState<boolean>(initialIsLocked);
 
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function LobbyContent({
         <div className="w-full max-w-4xl">
           <div className="flex items-center justify-between">
             <div className="text-sm opacity-90">
-              Join at <span className="font-semibold">kuizz.my.id</span>
+              {t("joinAt")} <span className="font-semibold">kuizz.my.id</span>
             </div>
             <div className="flex items-center gap-3">
               <Tooltip>
@@ -86,11 +88,11 @@ export default function LobbyContent({
                     onClick={toggleLock}
                   >
                     {isLocked ? <Lock width={18} /> : <Unlock width={18} />}
-                    <span>{isLocked ? "Locked" : "Unlocked"}</span>
+                    <span>{isLocked ? t("locked") : t("unlocked")}</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {isLocked ? "Game is Locked" : "Game is Unlocked"}
+                  {isLocked ? t("gameLocked") : t("gameUnlocked")}
                 </TooltipContent>
               </Tooltip>
 
@@ -102,7 +104,7 @@ export default function LobbyContent({
                         className="rounded-lg bg-white px-4 py-2 font-semibold text-blue-800 shadow hover:bg-white/80 disabled:bg-white/80"
                         disabled={players.length < 1}
                       >
-                        Start
+                        {t("start")}
                       </Button>
                     </span>
                   ) : (
@@ -110,14 +112,14 @@ export default function LobbyContent({
                       className="rounded-lg bg-white px-4 py-2 font-semibold text-blue-800 shadow hover:bg-white/80 disabled:bg-white/80"
                       onClick={startGame}
                     >
-                      Start
+                      {t("start")}
                     </Button>
                   )}
                 </TooltipTrigger>
                 <TooltipContent>
                   {players.length < 1
                     ? "Need at least 1 player to start"
-                    : "Start the game"}
+                    : t("startGame")}
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -126,15 +128,15 @@ export default function LobbyContent({
           <div className="mt-10 flex items-center justify-between rounded-lg bg-white/5 p-6">
             <div>
               <div className="text-sm tracking-wide uppercase opacity-90">
-                Game PIN
+                {t("gamePin")}
               </div>
               <div className="mt-2 text-6xl font-extrabold tracking-widest">
                 {joinCode}
               </div>
               <div className="mt-1 text-sm opacity-90">
-                Ask players to go to{" "}
-                <span className="font-semibold">kuizz.live</span> and enter the
-                PIN
+                {t("askPlayersToGo")}{" "}
+                <span className="font-semibold">kuizz.live</span>{" "}
+                {t("andEnterPin")}
               </div>
             </div>
 
@@ -147,14 +149,14 @@ export default function LobbyContent({
 
               <div className="text-right">
                 <div className="mt-1 text-3xl font-bold">{players.length}</div>
-                <div className="text-sm opacity-90">Participants Joined</div>
+                <div className="text-sm opacity-90">{t("participantsJoined")}</div>
               </div>
             </div>
           </div>
 
           <div className="mt-10 flex flex-col items-center justify-center">
             <div className="rounded-full bg-white/10 px-6 py-3 text-lg text-white">
-              Waiting for participants
+              {t("waitingForParticipants")}
             </div>
 
             <div className="mt-10 flex flex-wrap items-center justify-center gap-8">

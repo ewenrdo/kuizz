@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { socket } from "@/lib/socket";
 import { apiFetch, getAccessToken } from "@/lib/auth";
 import { getRandomAvatar } from "@/components/avatar/AvatarBuilder";
@@ -28,6 +29,7 @@ const nunito = Nunito({
 });
 
 export default function JoinContent() {
+  const t = useTranslations("Game");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -395,7 +397,7 @@ export default function JoinContent() {
                         if (e.key === "Enter" && !loading && code)
                           handleCheckRoom();
                       }}
-                      placeholder="Game PIN"
+                      placeholder={t("gamePin")}
                       className="input-dark header-font w-full rounded-xl px-6 py-4 text-center text-xl font-bold tracking-widest uppercase"
                       autoFocus
                     />
@@ -412,7 +414,7 @@ export default function JoinContent() {
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !loading && nick) handleJoin();
                       }}
-                      placeholder="Enter Nickname..."
+                      placeholder={t("nicknamePlaceholder")}
                       className="input-dark header-font w-full rounded-xl py-4 pr-6 pl-12 text-lg font-bold"
                       autoFocus
                     />

@@ -9,6 +9,7 @@ import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import { apiFetch } from "@/lib/auth";
+import { useTranslations } from "next-intl";
 
 type Option = {
   text: string;
@@ -28,6 +29,7 @@ type ExcelRow = {
 } & Record<`Option${number}`, string>;
 
 export default function ImportPage() {
+  const t = useTranslations("QuizImport");
   const [fileName, setFileName] = useState<string | null>(null);
   const [preview, setPreview] = useState<QuestionPreview[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
@@ -197,10 +199,10 @@ export default function ImportPage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Import Quiz" />
+      <PageBreadcrumb pageTitle={t("title")} />
 
       <div className="space-y-6">
-        <ComponentCard title="Import Quiz from Excel">
+        <ComponentCard title={t("fromExcel")}>
           <div className="mx-auto max-w-4xl space-y-8 p-8">
             {/* Upload Area */}
             <div
@@ -213,7 +215,7 @@ export default function ImportPage() {
               <p className="text-gray-600">
                 {fileName
                   ? `Selected: ${fileName}`
-                  : "Drag & drop XLSX file here, or click to select"}
+                  : t("dropzone")}
               </p>
             </div>
 
@@ -223,14 +225,14 @@ export default function ImportPage() {
               className="mt-4 text-sm"
             >
               <FileSpreadsheet size={16} />
-              Download template
+              {t("downloadTemplate")}
             </Button>
 
             {/* Errors */}
             {errors.length > 0 && (
               <div className="rounded-xl border border-red-200 bg-red-50 p-4">
                 <h2 className="mb-2 font-semibold text-red-700">
-                  Validation Errors
+                  {t("validationErrors")}
                 </h2>
                 <ul className="space-y-1 text-sm text-red-600">
                   {errors.map((e, i) => (
@@ -244,7 +246,7 @@ export default function ImportPage() {
             {preview.length > 0 && (
               <div className="space-y-4">
                 <div className="text-sm text-gray-500">
-                  {preview.length} questions detected
+                  {t("questionsDetected", { count: preview.length })}
                 </div>
 
                 {preview.map((q, i) => (

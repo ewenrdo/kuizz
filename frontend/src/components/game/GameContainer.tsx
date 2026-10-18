@@ -14,6 +14,7 @@ import GameAlreadyStarted from "./fallback/GameAlreadyStarted";
 import RoomLocked from "./fallback/RoomLocked";
 import HostQuestion from "./HostQuestion";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { PlayerModel } from "@/types";
 
 type GamePhase =
@@ -38,6 +39,7 @@ interface CurrentQuestion {
 }
 
 export default function GameContainer({ roomCode }: GameContainerProps) {
+  const t = useTranslations("Game");
   const [phase, setPhase] = useState<GamePhase>("WAITING");
   const [question, setQuestion] = useState<CurrentQuestion | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -77,7 +79,7 @@ export default function GameContainer({ roomCode }: GameContainerProps) {
 
   const handleAbortGame = () => {
     if (
-      confirm("Are you sure you want to end the game early for all players?")
+      confirm(t("confirmEndGame"))
     ) {
       socket.emit("abort_game", {
         roomCode,

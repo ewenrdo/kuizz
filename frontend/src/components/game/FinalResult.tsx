@@ -21,6 +21,7 @@ interface FinalResultProps {
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 export default function FinalResult({
   players,
@@ -29,6 +30,7 @@ export default function FinalResult({
   sessionId,
   onPlayAgain,
 }: FinalResultProps) {
+  const t = useTranslations("Game");
   const [localAvatar, setLocalAvatar] = useState<AvatarModel | null>(null);
 
   useEffect(() => {
@@ -37,12 +39,12 @@ export default function FinalResult({
       try {
         setLocalAvatar(JSON.parse(stored));
       } catch (e) {
-        toast.error("Failed to parse avatar", {
-          description: e instanceof Error ? e.message : "Please try again",
+        toast.error(t("avatarParseError"), {
+          description: e instanceof Error ? e.message : t("tryAgain"),
         });
       }
     }
-  }, []);
+  }, [t]);
 
   const sorted = [...players].sort((a, b) => b.score - a.score);
   const topThree = sorted.slice(0, 3);
@@ -51,7 +53,7 @@ export default function FinalResult({
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-linear-to-br from-purple-800 via-indigo-700 to-blue-900 px-6 py-16 text-white">
-      <h1 className="mb-12 text-4xl font-bold">🎉 Game Finished!</h1>
+      <h1 className="mb-12 text-4xl font-bold">🎉 {t("gameFinished")}!</h1>
 
       {/* Podium */}
       <div className="flex items-end justify-center gap-6">
@@ -87,7 +89,7 @@ export default function FinalResult({
       {/* My Result */}
       {myName && (
         <div className="mt-10 rounded-full bg-white/10 px-6 py-3 text-lg">
-          You finished <span className="font-bold">#{myRank}</span>
+          {t("youFinished")} <span className="font-bold">#{myRank}</span>
         </div>
       )}
 
@@ -135,24 +137,24 @@ export default function FinalResult({
                 }
                 className="rounded-lg bg-white/10 px-6 py-3 font-semibold text-white shadow hover:bg-white/20"
               >
-                View Stats
+                {t("viewStats")}
               </button>
             )}
             <button
               onClick={() => (window.location.href = "/dashboard/quizes")}
               className="rounded-lg bg-white/10 px-6 py-3 font-semibold text-white shadow hover:bg-white/20"
             >
-              Start Over
+              {t("startOver")}
             </button>
             <button
               onClick={onPlayAgain}
               className="rounded-lg bg-white px-6 py-3 font-semibold text-indigo-700 shadow hover:bg-white/80"
             >
-              Play Again
+              {t("playAgain")}
             </button>
           </div>
         ) : (
-          <div className="text-sm opacity-70">Waiting for host...</div>
+          <div className="text-sm opacity-70">{t("waitingForHost")}</div>
         )}
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -67,6 +68,7 @@ import {
 import { useEffect } from "react";
 
 export default function ReportsPage() {
+  const t = useTranslations("Reports");
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -260,7 +262,7 @@ export default function ReportsPage() {
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
-          HOSTED GAMES
+          {t("hostedGames")}
         </button>
         <button
           onClick={() => setActiveTab("PLAYED")}
@@ -270,18 +272,18 @@ export default function ReportsPage() {
               : "border-transparent text-gray-500 hover:text-gray-700"
           }`}
         >
-          PLAYED GAMES
+          {t("playedGames")}
         </button>
       </div>
 
       {/* Hosted Games View */}
       {activeTab === "HOSTED" && (
         <div className="animate-in fade-in zoom-in-95 space-y-6 duration-200">
-          <ComponentCard title="Sessions You Hosted">
+          <ComponentCard title={t("sessionsHosted")}>
             <div className="mb-4 flex items-center justify-between px-4">
               <input
                 type="text"
-                placeholder="Search by title..."
+                placeholder={t("search")}
                 className="w-full rounded-full border-transparent bg-gray-50 px-5 py-2.5 text-sm text-gray-900 transition-all outline-none focus:border-gray-200 focus:bg-white focus:ring-4 focus:ring-[#46178f]/5 sm:w-80"
                 value={search}
                 onChange={(e) => {
@@ -301,7 +303,7 @@ export default function ReportsPage() {
                   <EmptyMedia variant="icon">
                     <Gamepad2 />
                   </EmptyMedia>
-                  <EmptyTitle>No Hosted Games</EmptyTitle>
+                  <EmptyTitle>{t("noHostedGames")}</EmptyTitle>
                   <EmptyDescription>
                     You haven&apos;t hosted any games yet. Start a quiz to see
                     its history here!
@@ -496,7 +498,7 @@ export default function ReportsPage() {
       {/* Played Games View */}
       {activeTab === "PLAYED" && (
         <div className="animate-in fade-in zoom-in-95 space-y-6 duration-200">
-          <ComponentCard title="Games You Played">
+          <ComponentCard title={t("gamesPlayed")}>
             {loadingPlayed ? (
               <div className="animate-pulse space-y-4 p-4">
                 {[1, 2, 3].map((i) => (
@@ -516,7 +518,7 @@ export default function ReportsPage() {
                   <EmptyMedia variant="icon">
                     <History />
                   </EmptyMedia>
-                  <EmptyTitle>No Gameplay History</EmptyTitle>
+                  <EmptyTitle>{t("noGameplayHistory")}</EmptyTitle>
                   <EmptyDescription>
                     You haven&apos;t played any games yet. Join a room and
                     complete a quiz to track your score here!
@@ -639,7 +641,7 @@ export default function ReportsPage() {
             <AlertDialogMedia className="bg-red-50 text-red-600">
               <Trash2Icon />
             </AlertDialogMedia>
-            <AlertDialogTitle>Delete Game Session?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteSession")}</AlertDialogTitle>
             <AlertDialogDescription className="font-medium text-gray-500">
               This will permanently delete the game session history and all its
               associated player statistics.
@@ -653,7 +655,7 @@ export default function ReportsPage() {
                 setOpenModal(false);
               }}
             >
-              Cancel
+              {t("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               className="rounded-xl bg-red-600 px-6 font-bold text-white hover:bg-red-700"

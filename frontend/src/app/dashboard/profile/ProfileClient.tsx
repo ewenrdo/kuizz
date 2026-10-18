@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { apiFetch } from "@/lib/auth";
 import { toast } from "sonner";
@@ -21,6 +22,7 @@ type UserProfile = {
 };
 
 export default function ProfilePage() {
+  const t = useTranslations("Profile");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -140,9 +142,9 @@ export default function ProfilePage() {
           </div>
           <div>
             <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
-              Profile Information
+              {t("information")}
             </h3>
-            <p className="text-sm text-gray-500">Update your display name</p>
+            <p className="text-sm text-gray-500">{t("updateName")}</p>
           </div>
         </div>
 
@@ -150,7 +152,7 @@ export default function ProfilePage() {
           {avatarConfig && <AvatarDisplay config={avatarConfig} size={64} />}
           <div>
             <p className="text-xl font-bold text-gray-800 dark:text-white/90">
-              {profile?.name ?? "No name set"}
+              {profile?.name ?? t("noName")}
             </p>
             <p className="text-sm text-gray-500">{profile?.email}</p>
             <Badge
@@ -168,13 +170,13 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Display Name
+              {t("displayName")}
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
-              placeholder="Your name"
+              placeholder={t("namePlaceholder")}
             />
           </div>
           <div>
@@ -199,7 +201,7 @@ export default function ProfilePage() {
           ) : (
             <Save size={16} />
           )}
-          Save Profile
+          {t("saveProfile")}
         </button>
       </div>
 
@@ -211,10 +213,10 @@ export default function ProfilePage() {
           </div>
           <div>
             <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
-              Change Password
+              {t("changePassword")}
             </h3>
             <p className="text-sm text-gray-500">
-              Leave blank to keep current password
+              {t("passwordHint")}
             </p>
           </div>
         </div>
@@ -222,13 +224,13 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[
             {
-              label: "Current Password",
+              label: t("currentPassword"),
               val: oldPassword,
               set: setOldPassword,
             },
-            { label: "New Password", val: newPassword, set: setNewPassword },
+            { label: t("newPassword"), val: newPassword, set: setNewPassword },
             {
-              label: "Confirm New Password",
+              label: t("confirmPassword"),
               val: confirmPassword,
               set: setConfirmPassword,
             },
@@ -242,7 +244,7 @@ export default function ProfilePage() {
                 value={val}
                 onChange={(e) => set(e.target.value)}
                 className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
-                placeholder="••••••••"
+                placeholder={t("passwordPlaceholder")}
               />
             </div>
           ))}
@@ -258,7 +260,7 @@ export default function ProfilePage() {
           ) : (
             <KeyRound size={16} />
           )}
-          Change Password
+          {t("changePassword")}
         </button>
       </div>
 

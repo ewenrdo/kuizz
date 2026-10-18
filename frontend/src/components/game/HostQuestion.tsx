@@ -8,6 +8,7 @@ import {
   Circle,
   Diamond,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface HostQuestionProps {
   question: string;
@@ -79,6 +80,7 @@ export default function HostQuestion({
   totalQuestions,
   onEndGame,
 }: HostQuestionProps) {
+  const t = useTranslations("Game");
   const totalAnswered = Object.values(answerStats).reduce((a, b) => a + b, 0);
   const waitingFor = Math.max(0, totalPlayers - totalAnswered);
   const percentCompleted =
@@ -122,7 +124,7 @@ export default function HostQuestion({
           </div>
           <div className="flex flex-col items-center">
             <div className="mb-1 text-[10px] font-bold tracking-widest text-gray-400">
-              PLAYERS
+              {t("players")}
             </div>
             <div className="text-2xl font-bold">
               {totalAnswered} / {totalPlayers}
@@ -136,13 +138,13 @@ export default function HostQuestion({
             className="flex items-center gap-2 rounded-lg bg-[#2a1b25] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#3a2835]"
           >
             <FastForward size={16} fill="white" />
-            <span>Skip</span>
+            <span>{t("skip")}</span>
           </button>
           <button
             onClick={onEndGame}
             className="rounded-lg bg-[#ef4444] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600"
           >
-            End Game
+            {t("endGame")}
           </button>
         </div>
       </header>
@@ -151,7 +153,10 @@ export default function HostQuestion({
       <main className="flex flex-1 flex-col items-center px-10 pt-12 pb-8">
         {/* Question Header */}
         <div className="mb-6 rounded-full border border-[#f97316]/30 bg-[#f97316]/10 px-5 py-1.5 text-[11px] font-bold tracking-widest text-[#f97316]">
-          QUESTION {currentQuestionIndex + 1} OF {totalQuestions}
+          {t("questionOf", {
+            current: currentQuestionIndex + 1,
+            total: totalQuestions,
+          })}
         </div>
         <h1 className="mb-14 max-w-5xl text-center text-[40px] leading-tight font-extrabold tracking-tight">
           {question}

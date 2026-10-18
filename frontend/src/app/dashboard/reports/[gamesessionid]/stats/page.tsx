@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -57,6 +58,7 @@ type StatsData = {
 };
 
 export default function GameStatsPage() {
+  const t = useTranslations("Reports");
   const { gamesessionid } = useParams() as { gamesessionid: string };
   const router = useRouter();
   const [data, setData] = useState<StatsData | null>(null);
@@ -85,7 +87,7 @@ export default function GameStatsPage() {
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="text-gray-500">Loading Game Statistics...</div>
+        <div className="text-gray-500">{t("loadingStats")}</div>
       </div>
     );
   }
@@ -222,7 +224,7 @@ export default function GameStatsPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Chart */}
         <div className="lg:col-span-2">
-          <ComponentCard title="Questions Accuracy">
+          <ComponentCard title={t("questionsAccuracy")}>
             <div className="h-80 w-full">
               {typeof window !== "undefined" && (
                 <ReactApexChart
@@ -238,7 +240,7 @@ export default function GameStatsPage() {
 
         {/* Top Players section */}
         <div className="space-y-6 lg:col-span-1">
-          <ComponentCard title="Top Performers">
+          <ComponentCard title={t("topPerformers")}>
             {topPlayers.length === 0 ? (
               <div className="py-4 text-center text-sm text-gray-500">
                 No players joined this session.
@@ -275,10 +277,10 @@ export default function GameStatsPage() {
             )}
           </ComponentCard>
 
-          <ComponentCard title="Session Info">
+          <ComponentCard title={t("sessionInfo")}>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Status:</span>
+                <span className="text-gray-500">{t("status")}:</span>
                 <Badge
                   className={
                     session.status === "FINISHED"
@@ -290,14 +292,14 @@ export default function GameStatsPage() {
                 </Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Started At:</span>
+                <span className="text-gray-500">{t("startedAt")}:</span>
                 <span className="font-medium">
                   {new Date(session.createdAt).toLocaleString()}
                 </span>
               </div>
               {session.finishedAt && (
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Finished At:</span>
+                  <span className="text-gray-500">{t("finishedAt")}:</span>
                   <span className="font-medium">
                     {new Date(session.finishedAt).toLocaleString()}
                   </span>
@@ -315,7 +317,7 @@ export default function GameStatsPage() {
             Player Results
           </h3>
           {playersDetail.length === 0 ? (
-            <p className="text-sm text-gray-500">No player data available.</p>
+            <p className="text-sm text-gray-500">{t("noPlayerData")}</p>
           ) : (
             <div className="mt-4 overflow-hidden rounded-xl border border-gray-100 bg-white dark:border-gray-800 dark:bg-gray-900">
               <div className="max-w-full overflow-x-auto">
