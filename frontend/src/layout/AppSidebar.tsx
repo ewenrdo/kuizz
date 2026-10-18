@@ -12,7 +12,7 @@ import { UserModelType } from "@/types";
 import {
   BarChart2,
   FolderOpen,
-  GraduationCap,
+  Globe,
   Grid,
   HelpCircle,
   Users,
@@ -30,28 +30,23 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: <Grid size={20} />,
-    name: "Dashboard",
+    name: "Tableau de bord",
     path: "/dashboard",
   },
   {
     icon: <Gamepad2 size={20} />,
-    name: "My Quizzes",
+    name: "Mes Quiz",
     path: "/dashboard/quizes",
   },
   {
     icon: <BarChart2 size={20} />,
-    name: "Reports",
+    name: "Rapports",
     path: "/dashboard/reports",
   },
   {
-    name: "Collections",
-    icon: <FolderOpen size={20} />,
-    path: "/dashboard/collections",
-  },
-  {
-    name: "Team Space",
+    name: "Utilisateurs",
     icon: <Users size={20} />,
-    path: "/dashboard/team",
+    path: "/dashboard/users",
   },
   {
     icon: <Download size={20} />,
@@ -62,13 +57,13 @@ const navItems: NavItem[] = [
 
 const resourcesItems: NavItem[] = [
   {
-    icon: <GraduationCap size={20} />,
-    name: "Academy",
-    path: "/academy",
+    icon: <Globe size={20} />,
+    name: "Paroisse",
+    path: "https://www.paroisse-enghien-saintgratien.com/",
   },
   {
     icon: <HelpCircle size={20} />,
-    name: "Help Center",
+    name: "Assistance",
     path: "/help",
   },
 ];
