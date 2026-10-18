@@ -87,9 +87,9 @@ export default function JoinContent() {
       setLoading(false);
     };
 
-    const onRoomNotFound = () => onRoomError("Room not found. It might have been closed.");
-    const onRoomLocked = () => onRoomError("Room is locked by the host.");
-    const onGameStarted = () => onRoomError("Game has already started.");
+    const onRoomNotFound = () => onRoomError(t("roomNotFound2"));
+    const onRoomLocked = () => onRoomError(t("roomLocked2"));
+    const onGameStarted = () => onRoomError(t("roomAlreadyStarted"));
 
     const cleanupStep1Listeners = () => {
       socket.off("room_valid", onRoomValid);
@@ -340,7 +340,7 @@ export default function JoinContent() {
                 className="flex items-center gap-2 rounded-full border border-white/5 bg-[#2a1b3d] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#34224c]"
               >
                 <CircleUser className="text-[20px]" />
-                Log in as Host
+                {t("loginAsHost")}
               </Link>
             ) : (
               <div className="flex items-center gap-2 rounded-full border border-white/5 bg-[#2a1b3d] px-4 py-2 text-sm font-bold tracking-widest text-white uppercase shadow-inner">
@@ -370,14 +370,14 @@ export default function JoinContent() {
                 <h1
                   className={`header-font mb-2 text-3xl font-bold text-white`}
                 >
-                  {step === 1 ? "Enter Game PIN" : "Join the fun!"}
+                  {step === 1 ? t("enterGamePin") : t("joinFun")}
                 </h1>
                 <p className="text-sm font-medium text-[var(--text-dim)]">
                   {step === 1 ? (
-                    "Join the fun! Enter the PIN provided by your host."
+                    t("joinFunLabel")
                   ) : (
                     <span>
-                      You&apos;re connecting to Game PIN:{" "}
+                      {t("connectingToPin")}{" "}
                       <span className="font-bold text-[var(--primary-accent)]">
                         {code}
                       </span>
@@ -434,7 +434,7 @@ export default function JoinContent() {
                     disabled={!code || loading}
                     className="btn-primary header-font flex w-full items-center justify-center gap-2 rounded-xl py-4 text-xl font-bold"
                   >
-                    {loading ? "Checking..." : "Join Game"}
+                    {loading ? t("checking") : t("joinGameButton")}
                     {!loading && (
                       <ArrowRight className="text-white" size={24} />
                     )}
@@ -445,7 +445,7 @@ export default function JoinContent() {
                     disabled={!nick || loading}
                     className="btn-primary header-font flex w-full items-center justify-center gap-2 rounded-xl py-4 text-xl font-bold"
                   >
-                    {loading ? "Joining..." : "OK, Go!"}
+                    {loading ? t("joining") : t("okJoin")}
                     {!loading && (
                       <ArrowRight className="text-white" size={24} />
                     )}
@@ -457,13 +457,13 @@ export default function JoinContent() {
             {step === 1 && (
               <div className="mt-8 rounded-3xl border border-white/5 bg-[#130a1c] p-6 text-center opacity-80 transition-opacity hover:opacity-100">
                 <p className="mb-2 text-sm font-bold text-[var(--text-light)]">
-                  Don&apos;t have a PIN?
+                  {t("noPin")}
                 </p>
                 <Link
                   href="/"
                   className="flex items-center justify-center gap-1 text-sm font-bold text-[var(--primary-accent)] transition-colors hover:text-[var(--primary-hover)]"
                 >
-                  Browse public quizzes
+                  {t("browseQuizzes")}
                   <SquareArrowOutUpRight size={18} />
                 </Link>
               </div>
@@ -471,12 +471,12 @@ export default function JoinContent() {
 
             {step === 2 && (
               <p className="mt-8 text-center text-xs text-[var(--text-dim)] opacity-60">
-                By joining, you agree to our{" "}
+                {t("byJoining")}{" "}
                 <Link
                   href="#"
                   className="underline transition-colors hover:text-white"
                 >
-                  Terms of Service
+                  {t("tos")}
                 </Link>
                 .
               </p>
@@ -490,16 +490,16 @@ export default function JoinContent() {
             {step === 1 ? (
               <>
                 <Link href="#" className="transition-colors hover:text-white">
-                  Terms
+                  {t("terms")}
                 </Link>
                 <span>•</span>
                 <Link href="#" className="transition-colors hover:text-white">
-                  Privacy
+                  {t("privacy")}
                 </Link>
               </>
             ) : (
               <span className="tracking-[3px] uppercase">
-                Kuizz Platform © {new Date().getFullYear()}
+                {new Date().getFullYear()} &copy; Kuizz
               </span>
             )}
           </div>
