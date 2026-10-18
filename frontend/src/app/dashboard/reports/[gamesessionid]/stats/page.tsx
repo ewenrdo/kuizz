@@ -79,6 +79,7 @@ export default function GameStatsPage() {
     };
 
     fetchStats();
+    document.title = `Game Stats | Kuizz`;
   }, [gamesessionid]);
 
   if (loading) {

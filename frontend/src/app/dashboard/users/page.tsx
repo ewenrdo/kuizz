@@ -82,6 +82,7 @@ export default function UsersPage() {
       toast.error("Access denied");
       router.push("/dashboard");
     }
+    document.title = "Users Management | Kuizz";
   }, [currentUser, router]);
 
   const handleDeleteUser = (userId: string) => {

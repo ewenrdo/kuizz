@@ -2,7 +2,7 @@
 
 import ComponentCard from "@/components/common/ComponentCard";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import { useDropzone } from "react-dropzone";
@@ -33,6 +33,11 @@ export default function ImportPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Tab name
+  useEffect(() => {
+    document.title = "Import Quiz | Kuizz";
+  }, []);
+  
   function parseRows(rows: ExcelRow[]) {
     const questions: QuestionPreview[] = [];
     const errors: string[] = [];

@@ -71,6 +71,7 @@ export default function HistoryDetailPage({
       }
     }
     fetchDetail();
+    document.title = `Player History | Kuizz`;
   }, [id]);
 
   if (loading) {

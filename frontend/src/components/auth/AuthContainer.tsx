@@ -15,7 +15,16 @@ import {
   Lightbulb,
   Lock,
   User2Icon,
+  ShieldAlert,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const fredoka = Fredoka({ subsets: ["latin"], weight: ["500", "600", "700"] });
 
@@ -33,6 +42,7 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 
   const redirectTo = searchParams.get("redirect") || "/dashboard";
   const isLogin = mode === "login";
@@ -211,12 +221,13 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
 
               {isLogin && (
                 <div className="flex justify-end pt-1">
-                  <Link
-                    href="#"
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPasswordModal(true)}
                     className="text-xs font-bold text-[#46178F] transition-colors hover:text-[#34116c]"
                   >
                     Forgot password?
-                  </Link>
+                  </button>
                 </div>
               )}
 
@@ -305,6 +316,34 @@ export default function AuthContainer({ mode, apiUrl }: AuthContainerProps) {
           </div>
         </div>
       </div>
+
+      {/* Modal Mot de passe oublié */}
+      <Dialog
+        open={showForgotPasswordModal}
+        onOpenChange={(open: boolean) => setShowForgotPasswordModal(open)}
+      >
+        <DialogContent className="rounded-2xl sm:max-w-md">
+          <DialogHeader className="flex flex-col items-center text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+              <ShieldAlert size={24} />
+            </div>
+            <DialogTitle className="text-xl font-bold">
+              Unable to reset password
+            </DialogTitle>
+            <DialogDescription className="mt-2 text-center text-sm text-gray-600">
+              Resetting your password is not yet enabled on this platform. Please contact an administrator to migrate your account if you lost your password. We apologize for the inconvenience and appreciate your understanding.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 flex justify-end">
+            <Button
+              onClick={() => setShowForgotPasswordModal(false)}
+              className="w-full rounded-xl bg-[#46178F] font-bold text-white hover:bg-[#34116c]"
+            >
+              J'ai compris
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

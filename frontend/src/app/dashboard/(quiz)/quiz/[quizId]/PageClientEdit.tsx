@@ -78,6 +78,8 @@ export default function EditPage() {
       .catch(() => {
         toast.error("Failed to load quiz");
       });
+
+      document.title = initialData ? `Edit "${initialData.title}" | Kuizz` : "Edit Quiz | Kuizz";
   }, [quizId]);
 
   async function handleSaveQuiz(

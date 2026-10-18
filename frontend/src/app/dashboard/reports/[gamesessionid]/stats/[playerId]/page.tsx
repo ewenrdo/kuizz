@@ -71,6 +71,7 @@ export default function HostPlayerReviewPage({
       }
     }
     fetchDetail();
+    document.title = `Player History | Kuizz`;
   }, [gamesessionid, playerId]);
 
   if (loading) {

@@ -596,7 +596,7 @@ export function SharedQuizEditor({
               />
             </div>
 
-            {/* Media Dropzone */}
+            {/* Media Dropzone 
             <div className="mb-8 flex max-h-[400px] min-h-[250px] flex-1 items-center justify-center">
               <div className="group flex h-full w-full max-w-2xl cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed border-gray-700 bg-[#1c1228]/30 transition hover:border-gray-500 hover:bg-[#1c1228]/50">
                 <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-[#1a0f26] transition-transform group-hover:scale-105">
@@ -627,7 +627,51 @@ export function SharedQuizEditor({
                   </Button>
                 </div>
               </div>
+            </div>*/}
+            <div className="mb-8 flex max-h-[400px] min-h-[250px] flex-1 items-center justify-center">
+              <div className="relative flex h-full w-full max-w-2xl cursor-not-allowed flex-col items-center justify-center gap-4 overflow-hidden rounded-3xl border-2 border-dashed border-purple-500/30 bg-[#1c1228]/20 p-6 opacity-75 backdrop-blur-xs">
+                {/* Badge Coming Soon */}
+                <div className="absolute top-4 right-4 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-400 border border-purple-500/20">
+                  Coming Soon
+                </div>
+
+                {/* Icone avec effet visuel d'attente */}
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-[#1a0f26] border border-purple-500/20 shadow-inner">
+                  <ImageIcon size={32} className="text-purple-400/60" />
+                </div>
+
+                {/* Textes explicites */}
+                <div className="text-center">
+                  <h3 className="mb-1 text-xl font-bold text-white/80">
+                    Media library in development
+                  </h3>
+                  <p className="text-sm text-gray-400">
+                    Finding and inserting media (images, Giphy) will be available soon.
+                  </p>
+                </div>
+
+                {/* Boutons désactivés avec style visuel approprié */}
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    className="rounded-full border border-purple-500/10 bg-[#1a0f26]/60 px-4 text-xs text-gray-500 opacity-60 cursor-not-allowed"
+                  >
+                    Library
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled
+                    className="rounded-full border border-purple-500/10 bg-[#1a0f26]/60 px-4 text-xs text-gray-500 opacity-60 cursor-not-allowed"
+                  >
+                    Giphy
+                  </Button>
+                </div>
+              </div>
             </div>
+
 
             {/* Answer Options Grid */}
             <div
@@ -652,11 +696,10 @@ export function SharedQuizEditor({
                     <div className="flex h-full items-center px-4">
                       <button
                         onClick={() => toggleCorrect(a.id)}
-                        className={`flex h-10 w-10 items-center justify-center rounded-full border-4 transition-all focus:outline-none ${
-                          a.isCorrect
+                        className={`flex h-10 w-10 items-center justify-center rounded-full border-4 transition-all focus:outline-none ${a.isCorrect
                             ? "scale-110 border-green-400 bg-green-500 text-white/90"
                             : "border-white/30 bg-transparent hover:border-white/50"
-                        }`}
+                          }`}
                       >
                         {a.isCorrect && (
                           <Check size={20} className="stroke-3" />
@@ -708,21 +751,19 @@ export function SharedQuizEditor({
                 <div className="flex rounded-md bg-gray-900/50 p-1">
                   <button
                     onClick={() => updateQuestionField("type", "Quiz")}
-                    className={`flex-1 rounded py-1.5 text-xs font-semibold transition ${
-                      currentQuestion.type === "Quiz"
+                    className={`flex-1 rounded py-1.5 text-xs font-semibold transition ${currentQuestion.type === "Quiz"
                         ? "bg-purple-600 text-white shadow"
                         : "text-gray-400 hover:text-white"
-                    }`}
+                      }`}
                   >
                     Quiz
                   </button>
                   <button
                     onClick={() => updateQuestionField("type", "True/False")}
-                    className={`flex-1 rounded py-1.5 text-xs font-semibold transition ${
-                      currentQuestion.type === "True/False"
+                    className={`flex-1 rounded py-1.5 text-xs font-semibold transition ${currentQuestion.type === "True/False"
                         ? "bg-purple-600 text-white shadow"
                         : "text-gray-400 hover:text-white"
-                    }`}
+                      }`}
                   >
                     True/False
                   </button>

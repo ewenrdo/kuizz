@@ -23,6 +23,7 @@ export default function Overview() {
 
   useEffect(() => {
     fetchDashboardSummary();
+    document.title = "Overview | Kuizz";
   }, []);
 
   const fetchDashboardSummary = async () => {

@@ -64,10 +64,16 @@ import {
   keepPreviousData,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export default function ReportsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  // Tab name
+  useEffect(() => {
+    document.title = "Reports & History | Kuizz";
+  }, []);
 
   // Tabs State
   const [activeTab, setActiveTab] = useState<"HOSTED" | "PLAYED">("HOSTED");
