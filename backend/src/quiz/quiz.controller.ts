@@ -22,7 +22,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 
 @Controller('quiz')
 export class QuizController {
-  constructor(private readonly quizService: QuizService) {}
+  constructor(private readonly quizService: QuizService) { }
 
   @Get()
   @UseGuards(JwtAuthGuard)
@@ -88,5 +88,28 @@ export class QuizController {
   @UseGuards(JwtAuthGuard)
   async toggleFavorite(@Param('id') id: string) {
     return await this.quizService.toggleFavorite(id);
+  }
+
+  @Post(':id/share')
+  async shareQuiz(
+    @Param('id') quizId: string,
+    @Body('email') email: string,
+  ) {
+    if (!email || typeof email !== 'string') {
+      throw new BadRequestException("L'adresse email est requise");
+    }
+
+    return this.quizService.shareQuizWithEmail(quizId, email);
+  }
+
+  @Delete(':id/share/:userId')
+  async unshareQuiz(
+    @Param('id') quizId: string,
+    @Param('userId') targetUserId: string,
+  ) {
+    return this.quizService.unshareQuizWithUser(
+      quizId,
+      targetUserId,
+    );
   }
 }

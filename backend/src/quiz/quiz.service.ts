@@ -10,13 +10,29 @@ import ExcelJS from 'exceljs';
 
 @Injectable()
 export class QuizService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  async findAll(ownerId: string) {
+  async findAll(userId: string) {
     return this.prisma.quiz.findMany({
-      where: { ownerId },
+      where: {
+        OR: [
+          { ownerId: userId },
+          { sharedWith: { some: { userId } } },
+        ],
+      },
       include: {
         questions: true,
+        sharedWith: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+              },
+            },
+          },
+        },
         _count: {
           select: { gameSessions: true },
         },
@@ -356,6 +372,65 @@ export class QuizService {
       return quiz;
     });
   }
+ 
+  async shareQuizWithEmail(quizId: string, email: string) {
+    const quiz = await this.prisma.quiz.findUnique({
+      where: { id: quizId },
+      include: { sharedWith: true },
+    });
+
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const alreadyShared = quiz.sharedWith.some(
+      (access) => access.userId === user.id,
+    );
+
+    if (alreadyShared) {
+      throw new BadRequestException('Quiz already shared with this user');
+    }
+
+    await this.prisma.quizAccess.create({
+      data: {
+        quizId,
+        userId: user.id,
+      },
+    });
+
+    return { message: 'Quiz shared successfully' };
+  }
+
+  async unshareQuizWithUser(quizId: string, userId: string) {
+    const quiz = await this.prisma.quiz.findUnique({
+      where: { id: quizId },
+      include: { sharedWith: true },
+    });
+
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
+
+    const access = quiz.sharedWith.find((a) => a.userId === userId);
+
+    if (!access) {
+      throw new NotFoundException('User does not have access to this quiz');
+    }
+
+    await this.prisma.quizAccess.delete({
+      where: { id: access.id },
+    });
+
+    return { message: 'Access revoked successfully' };
+  }
 
   private normalizeAndValidateQuestions(
     questions: NonNullable<CreateQuizDto['questions']>,
@@ -389,9 +464,9 @@ export class QuizService {
 
       const mappedOptions = Array.isArray(q.options)
         ? q.options.map((o) => ({
-            text: o.text ? o.text.trim() : '',
-            isCorrect: Boolean(o.isCorrect),
-          }))
+          text: o.text ? o.text.trim() : '',
+          isCorrect: Boolean(o.isCorrect),
+        }))
         : [];
 
       if (isPublished) {
