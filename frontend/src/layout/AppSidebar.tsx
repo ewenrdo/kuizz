@@ -53,7 +53,7 @@ const navItems: NavItem[] = [
 const resourcesItems: NavItem[] = [
   {
     icon: <HelpCircle size={20} />,
-    name: "Assistance",
+    name: "Help center",
     path: "/help",
   },
 ];
