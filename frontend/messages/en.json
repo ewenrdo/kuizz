@@ -8,6 +8,17 @@
     "createGame": "Create Game",
     "startGame": "Start Game"
   },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "myQuizzes": "My Quizzes",
+    "reports": "Reports",
+    "import": "Import",
+    "helpCenter": "Help Center",
+    "resources": "Resources",
+    "editProfile": "Edit Profile",
+    "userManagement": "User Management",
+    "logout": "Logout"
+  },
   "Dashboard": {
     "totalQuizzes": "Total Quizzes",
     "gamesHosted": "Games Hosted",

@@ -8,6 +8,17 @@
     "createGame": "Créer une partie",
     "startGame": "Démarrer la partie"
   },
+  "Sidebar": {
+    "dashboard": "Tableau de bord",
+    "myQuizzes": "Mes quiz",
+    "reports": "Rapports",
+    "import": "Importer",
+    "helpCenter": "Assistance",
+    "resources": "Ressources",
+    "editProfile": "Modifier le profil",
+    "userManagement": "Gestion des comptes",
+    "logout": "Déconnexion"
+  },
   "Dashboard": {
     "totalQuizzes": "Total des quiz",
     "gamesHosted": "Parties organisées",
