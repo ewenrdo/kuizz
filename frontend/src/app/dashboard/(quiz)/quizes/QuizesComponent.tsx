@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { socket } from "@/lib/socket";
 import { apiFetch, getAccessToken } from "@/lib/auth";
 import { AvatarModel } from "@/types";
+import { useTranslations } from "next-intl";
 
 type QuizVisibility = "PRIVATE" | "SHARED" | "PUBLIC";
 
@@ -90,6 +91,7 @@ type UserProfile = {
   createdAt: string;
 };
 export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
+  const t = useTranslations("QuizLibrary");
   const router = useRouter();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -107,7 +109,8 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
 
   useEffect(() => {
     fetchQuizzes();
-  }, []);
+    document.title = `${t("pageTitle")} | Kuizz`;
+  }, [t]);
 
   const fetchQuizzes = () => {
     apiFetch(`/quiz`)
@@ -127,7 +130,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
       const data: UserProfile = await res.json();
       setUserId(data.id);
     } catch {
-      toast.error("Failed to load profile");
+      toast.error(t("loadProfileFailed"));
     } finally {
       setLoading(false);
     }
@@ -141,7 +144,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
 
       const quiz = quizzes.find((q) => q.id === deleteId);
       if (!quiz) {
-        toast.error("Quiz not found");
+        toast.error(t("quizNotFound"));
         return;
       }
 
@@ -155,7 +158,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
 
         if (!res.ok) throw new Error();
 
-        toast.success("Access revoked");
+        toast.success(t("accessRevoked"));
       } else {
         // Supprimer définitivement le quiz si je suis le propriétaire
         const res = await apiFetch(`/quiz/${deleteId}`, {
@@ -164,7 +167,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
 
         if (!res.ok) throw new Error();
 
-        toast.success("Quiz deleted");
+        toast.success(t("quizDeleted"));
       }
 
       // Mise à jour de l'état local et fermeture de la modale
@@ -172,7 +175,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
       setOpenModal(false);
       setDeleteId(null);
     } catch {
-      toast.error("An error occurred while deleting");
+      toast.error(t("deleteFailed"));
     } finally {
       setIsDeleting(false);
     }
@@ -223,7 +226,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
 
       if (!res.ok) throw new Error();
     } catch {
-      toast.error("Failed to update favorite status");
+      toast.error(t("favoriteUpdateFailed"));
       // Revert on error
       setQuizzes((prev) =>
         prev.map((q) =>
@@ -247,15 +250,15 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to share quiz");
+        throw new Error(errorData.message || t("shareFailed"));
       }
 
-      toast.success("Quiz shared successfully");
+      toast.success(t("shareSuccess"));
       setShareEmail("");
       fetchQuizzes();
       setShareQuizTarget(null);
-    } catch (err: any) {
-      toast.error(err.message || "Error sharing quiz");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : t("shareFailed"));
     } finally {
       setIsSharing(false);
     }
@@ -269,7 +272,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
 
       if (!res.ok) throw new Error();
 
-      toast.success("Access revoked");
+      toast.success(t("accessRevoked"));
 
       setShareQuizTarget((prev) => {
         if (!prev) return null;
@@ -281,7 +284,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
 
       fetchQuizzes();
     } catch {
-      toast.error("Failed to revoke access");
+      toast.error(t("revokeFailed"));
     }
   };
 
@@ -333,17 +336,17 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
       (now.getTime() - updatedDate.getTime()) / (1000 * 60 * 60),
     );
 
-    let timeAgo = "Just now";
+    let timeAgo = t("justNow");
     if (diffHours >= 24) {
       const days = Math.floor(diffHours / 24);
-      timeAgo = `${days}d ago`;
+      timeAgo = t("daysAgo", { count: days });
     } else if (diffHours > 0) {
-      timeAgo = `${diffHours}h ago`;
+      timeAgo = t("hoursAgo", { count: diffHours });
     } else {
       const diffMins = Math.floor(
         (now.getTime() - updatedDate.getTime()) / (1000 * 60),
       );
-      if (diffMins > 0) timeAgo = `${diffMins}m ago`;
+      if (diffMins > 0) timeAgo = t("minutesAgo", { count: diffMins });
     }
 
     return (
@@ -375,7 +378,11 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
             <span
               className={`rounded-md px-2.5 py-1 text-[10px] font-bold uppercase ${statusBadgeClass}`}
             >
-              {isSharedWithMe ? "Shared with me" : isPublished ? "Published" : "Draft"}
+              {isSharedWithMe
+                ? t("sharedWithMe")
+                : isPublished
+                  ? t("published")
+                  : t("draft")}
             </span>
             {!isSharedWithMe && (
               <button
@@ -417,18 +424,18 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                 <DropdownMenuItem
                   onSelect={() => router.push(`/dashboard/quiz/${quiz.id}`)}
                 >
-                  <Edit2 className="mr-2 h-4 w-4" /> Edit
+                  <Edit2 className="mr-2 h-4 w-4" /> {t("edit")}
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
                   onSelect={() => setShareQuizTarget(quiz)}
                 >
-                  <Share2 className="mr-2 h-4 w-4 text-[#46178f]" /> Share
+                  <Share2 className="mr-2 h-4 w-4 text-[#46178f]" /> {t("share")}
                 </DropdownMenuItem>
 
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
-                    <Table2 className="mr-2 h-4 w-4" /> Export
+                    <Table2 className="mr-2 h-4 w-4" /> {t("export")}
                   </DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent>
@@ -437,7 +444,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                           window.location.href = `${apiUrl}/quiz/${quiz.id}/export`;
                         }}
                       >
-                        Excel (.xlsx)
+                        {t("excelExport")}
                       </DropdownMenuItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuPortal>
@@ -450,7 +457,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                     setOpenModal(true);
                   }}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  <Trash2 className="mr-2 h-4 w-4" /> {t("delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -461,12 +468,14 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
           <div className="mt-auto mb-6 flex items-center gap-4 text-xs font-medium text-gray-500">
             <div className="flex items-center gap-1.5">
               <Clock size={14} />
-              <span>Updated {timeAgo}</span>
+              <span>{t("updated", { time: timeAgo })}</span>
             </div>
             <div className="h-1 w-1 rounded-full bg-gray-300"></div>
             <div className="flex items-center gap-1.5">
               <Play size={14} className="fill-gray-400" />
-              <span>{quiz._count?.gameSessions || 0} plays</span>
+              <span>
+                {t("plays", { count: quiz._count?.gameSessions || 0 })}
+              </span>
             </div>
           </div>
 
@@ -478,14 +487,14 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                   onClick={() => handleStartGame(quiz.id)}
                   className="h-10 w-full rounded-lg bg-[#46178f] font-bold text-white shadow-sm hover:bg-[#3b127a]"
                 >
-                  Host Live
+                  {t("hostLive")}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => router.push(`/dashboard/quiz/${quiz.id}`)}
                   className="h-10 w-full rounded-lg border-gray-200 bg-white font-bold text-gray-700 shadow-sm hover:bg-gray-50"
                 >
-                  Edit
+                  {t("edit")}
                 </Button>
               </>
             ) : (
@@ -494,7 +503,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                 onClick={() => router.push(`/dashboard/quiz/${quiz.id}`)}
                 className="col-span-2 h-10 w-full rounded-lg border-dashed border-gray-300 font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               >
-                Continue Editing (Draft)
+                {t("continueEditingDraft")}
               </Button>
             )}
           </div>
@@ -503,15 +512,22 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
     );
   };
 
-  const filterTabs = ["All Quizzes", "Favorites", "Shared with me", "Drafts"];
+  const filterTabs = [
+    { value: "All Quizzes", label: t("allQuizzes") },
+    { value: "Favorites", label: t("favorites") },
+    { value: "Shared with me", label: t("sharedWithMe") },
+    { value: "Drafts", label: t("drafts") },
+  ];
   const isSharedWithMe = userId && deleteId && quizzes.find((q) => q.id === deleteId)?.ownerId !== userId;
   return (
     <div className="pb-24">
       {/* Header Area */}
       <div className="mb-8">
-        <h1 className="mb-2 text-4xl font-black text-gray-900">My Library</h1>
+        <h1 className="mb-2 text-4xl font-black text-gray-900">
+          {t("myLibrary")}
+        </h1>
         <p className="text-[15px] font-medium text-gray-500">
-          Manage your quizzes, host live games, or assign self-paced challenges.
+          {t("libraryDescription")}
         </p>
       </div>
 
@@ -520,24 +536,24 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
         <div className="flex flex-wrap items-center gap-2">
           {filterTabs.map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveFilter(tab)}
-              className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${activeFilter === tab
+              key={tab.value}
+              onClick={() => setActiveFilter(tab.value)}
+              className={`rounded-full px-5 py-2.5 text-sm font-bold transition-all ${activeFilter === tab.value
                 ? "bg-[#111827] text-white shadow-md shadow-gray-900/10"
                 : "border border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50"
                 }`}
             >
-              {tab}
+              {tab.label}
             </button>
           ))}
         </div>
 
         <div className="flex items-center text-sm font-medium text-gray-500">
-          <span className="mr-2">Sort by:</span>
+          <span className="mr-2">{t("sortBy")}:</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center rounded-lg px-3 py-1.5 font-bold text-gray-900 transition-colors outline-none hover:bg-gray-100">
-                {activeSort}{" "}
+                {t(`sort.${activeSort}`)}{" "}
                 <ChevronDown size={16} className="ml-1 opacity-70" />
               </button>
             </DropdownMenuTrigger>
@@ -553,7 +569,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                         : ""
                     }
                   >
-                    {sortOption}
+                    {t(`sort.${sortOption}`)}
                   </DropdownMenuItem>
                 ),
               )}
@@ -573,12 +589,12 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
             <Plus size={32} />
           </div>
           <h3 className="mb-2 text-center text-xl font-bold text-gray-900">
-            Create New
+            {t("createNew")}
             <br />
-            Quiz
+            {t("quiz")}
           </h3>
           <p className="max-w-[150px] text-center text-sm font-medium text-gray-500">
-            Start from scratch
+            {t("startFromScratch")}
           </p>
         </div>
 
@@ -592,7 +608,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
           onClick={() => router.push("/dashboard/create")}
           className="flex items-center gap-2 rounded-full bg-[#0060FF] px-6 py-4 font-bold text-white shadow-lg shadow-[#0060FF]/30 transition-all hover:-translate-y-1 hover:bg-[#0050d2] hover:shadow-xl"
         >
-          <Plus size={20} /> Create Quiz
+          <Plus size={20} /> {t("createQuiz")}
         </button>
       </div>
 
@@ -604,10 +620,10 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
         <DialogContent className="rounded-2xl sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
-              Share "{shareQuizTarget?.title}"
+              {t("shareTitle", { title: shareQuizTarget?.title || "" })}
             </DialogTitle>
             <DialogDescription className="text-gray-500">
-              Grant collaborators access to view and edit this quiz.
+              {t("shareDescription")}
             </DialogDescription>
           </DialogHeader>
 
@@ -615,7 +631,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
             <div className="flex gap-2">
               <Input
                 type="email"
-                placeholder="john.doe@kuizz.com"
+                placeholder={t("emailPlaceholder")}
                 value={shareEmail}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShareEmail(e.target.value)}
                 className="rounded-xl border-gray-200"
@@ -627,14 +643,14 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                 className="rounded-xl bg-[#46178f] font-bold text-white hover:bg-[#3b127a]"
               >
                 <UserPlus size={16} className="mr-1.5" />
-                {isSharing ? "Sharing..." : "Invite"}
+                {isSharing ? t("sharing") : t("invite")}
               </Button>
             </div>
           </form>
 
           <div className="mt-4">
             <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
-              People with access
+              {t("peopleWithAccess")}
             </h4>
             <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
               {shareQuizTarget?.sharedWith && shareQuizTarget.sharedWith.length > 0 ? (
@@ -645,7 +661,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                   >
                     <div className="truncate pr-2">
                       <p className="font-semibold text-gray-800">
-                        {access.user?.name || access.user?.email || "User"}
+                        {access.user?.name || access.user?.email || t("user")}
                       </p>
                       {access.user?.name && (
                         <p className="text-xs text-gray-400">{access.user.email}</p>
@@ -666,7 +682,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                 ))
               ) : (
                 <p className="py-2 text-center text-sm text-gray-400">
-                  Not shared with anyone yet.
+                  {t("notShared")}
                 </p>
               )}
             </div>
@@ -678,12 +694,14 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
       <AlertDialog open={openModal} onOpenChange={setOpenModal}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>{isSharedWithMe ? "Quit Quiz ?" : "Delete Quiz ?"}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {isSharedWithMe ? t("quitQuizConfirm") : t("deleteQuizConfirm")}
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-500">
               {
                 isSharedWithMe
-                  ? "You will lose access to this quiz. You can ask the owner to share it again."
-                  : "This will permanently delete this quiz. Played quiz statistics will remain."
+                  ? t("quitQuizDescription")
+                  : t("deleteQuizDescription")
               }
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -695,14 +713,20 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
                 setOpenModal(false);
               }}
             >
-              Cancel
+              {t("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               className="rounded-xl bg-red-600 px-6 font-bold text-white hover:bg-red-700"
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? (isSharedWithMe ? "Revoking..." : "Deleting...") : (isSharedWithMe ? "Quit Quiz" : "Delete Quiz")}
+              {isDeleting
+                ? isSharedWithMe
+                  ? t("revoking")
+                  : t("deleting")
+                : isSharedWithMe
+                  ? t("quitQuiz")
+                  : t("deleteQuiz")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

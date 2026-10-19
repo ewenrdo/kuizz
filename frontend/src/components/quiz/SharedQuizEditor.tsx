@@ -204,7 +204,7 @@ export interface SharedQuizEditorProps {
 }
 
 export function SharedQuizEditor({
-  initialTitle = "Untitled Quiz",
+  initialTitle = "",
   initialDescription = "",
   initialQuestions,
   isSaving,
@@ -212,7 +212,7 @@ export function SharedQuizEditor({
 }: SharedQuizEditorProps) {
   const t = useTranslations("QuizEditor");
   const router = useRouter();
-  const [quizTitle, setQuizTitle] = useState(initialTitle);
+  const [quizTitle, setQuizTitle] = useState(initialTitle || t("untitledQuiz"));
   const [quizDescription, setQuizDescription] = useState(initialDescription);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -273,14 +273,14 @@ export function SharedQuizEditor({
       updated[activeIndex].options = [
         {
           id: nanoid(),
-          text: "True",
+          text: t("trueAnswer"),
           isCorrect: true,
           color: "bg-blue-600",
           shape: "diamond",
         },
         {
           id: nanoid(),
-          text: "False",
+          text: t("falseAnswer"),
           isCorrect: false,
           color: "bg-red-600",
           shape: "triangle",
@@ -290,7 +290,8 @@ export function SharedQuizEditor({
       field === "type" &&
       value === "Quiz" &&
       updated[activeIndex].options.length === 2 &&
-      updated[activeIndex].options[0].text === "True"
+      (updated[activeIndex].options[0].text === "True" ||
+        updated[activeIndex].options[0].text === t("trueAnswer"))
     ) {
       updated[activeIndex].options = structuredClone(initialAnswers).map(
         (a) => ({
@@ -727,7 +728,7 @@ export function SharedQuizEditor({
                     onClick={addAnswer}
                     className="flex min-h-[72px] items-center justify-center gap-2 rounded-full border-2 border-dashed border-gray-700 bg-[#1c1228]/30 font-bold text-gray-500 transition-colors hover:border-gray-500 hover:bg-[#1c1228]/50 hover:text-gray-400"
                   >
-                    <Plus size={24} /> Add option
+                    <Plus size={24} /> {t("addOption")}
                   </button>
                 )}
             </div>
@@ -739,7 +740,7 @@ export function SharedQuizEditor({
           <div className="flex items-center gap-2 border-b border-gray-800 px-6 py-4">
             <Settings2 size={18} className="text-gray-400" />
             <h2 className="text-sm font-bold tracking-wide text-white">
-              SETTINGS
+              {t("settings")}
             </h2>
           </div>
 
@@ -748,7 +749,7 @@ export function SharedQuizEditor({
               {/* Question Type */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-gray-400">
-                  QUESTION TYPE
+                  {t("questionType")}
                 </label>
                 <div className="flex rounded-md bg-gray-900/50 p-1">
                   <button
@@ -758,7 +759,7 @@ export function SharedQuizEditor({
                         : "text-gray-400 hover:text-white"
                       }`}
                   >
-                    Quiz
+                    {t("quizType")}
                   </button>
                   <button
                     onClick={() => updateQuestionField("type", "True/False")}
@@ -767,7 +768,7 @@ export function SharedQuizEditor({
                         : "text-gray-400 hover:text-white"
                       }`}
                   >
-                    True/False
+                    {t("trueFalseType")}
                   </button>
                 </div>
               </div>
@@ -775,7 +776,7 @@ export function SharedQuizEditor({
               {/* Time Limit */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-gray-400">
-                  TIME LIMIT
+                  {t("timeLimit")}
                 </label>
                 <div className="relative">
                   <select
@@ -798,7 +799,7 @@ export function SharedQuizEditor({
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-gray-400">
-                    POINTS
+                    {t("points")}
                   </label>
                   <span className="text-xs font-semibold text-purple-400">
                     {currentQuestion.points}
@@ -825,7 +826,7 @@ export function SharedQuizEditor({
               {currentQuestion.type === "Quiz" && (
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-bold text-gray-400">
-                    ANSWER OPTIONS
+                    {t("answerOptions")}
                   </label>
                   <select
                     value={currentQuestion.answerOptions}
@@ -848,14 +849,14 @@ export function SharedQuizEditor({
               variant="outline"
               className="flex-1 rounded-full border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-white"
             >
-              <Copy size={16} className="mr-2" /> Duplicate
+              <Copy size={16} className="mr-2" /> {t("duplicate")}
             </Button>
             <Button
               onClick={() => deleteQuestion(activeIndex)}
               variant="outline"
               className="flex-1 rounded-full border-red-900/50 bg-transparent text-red-500 hover:bg-red-950 hover:text-red-400"
             >
-              <Trash2 size={16} className="mr-2" /> Delete
+              <Trash2 size={16} className="mr-2" /> {t("delete")}
             </Button>
           </div>
         </aside>

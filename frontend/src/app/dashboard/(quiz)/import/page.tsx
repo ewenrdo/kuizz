@@ -37,8 +37,8 @@ export default function ImportPage() {
 
   // Tab name
   useEffect(() => {
-    document.title = "Import Quiz | Kuizz";
-  }, []);
+    document.title = `${t("pageTitle")} | Kuizz`;
+  }, [t]);
   
   function parseRows(rows: ExcelRow[]) {
     const questions: QuestionPreview[] = [];
@@ -51,7 +51,7 @@ export default function ImportPage() {
       const timeLimit = Number(row.TimeLimit) || 20;
 
       if (!text) {
-        errors.push(`Row ${rowNumber}: Question required`);
+        errors.push(t("rowQuestionRequired", { row: rowNumber }));
         return;
       }
 
@@ -68,13 +68,13 @@ export default function ImportPage() {
       }
 
       if (options.length < 2) {
-        errors.push(`Row ${rowNumber}: Min 2 options`);
+        errors.push(t("rowMinOptions", { row: rowNumber }));
         return;
       }
 
       const correctRaw = row.Correct?.toString();
       if (!correctRaw) {
-        errors.push(`Row ${rowNumber}: Correct required`);
+        errors.push(t("rowCorrectRequired", { row: rowNumber }));
         return;
       }
 
@@ -86,12 +86,14 @@ export default function ImportPage() {
         if (i > 0 && i <= options.length) {
           options[i - 1].isCorrect = true;
         } else {
-          errors.push(`Row ${rowNumber}: Correct index ${i} out of range`);
+          errors.push(
+            t("rowCorrectIndexOutOfRange", { row: rowNumber, index: i }),
+          );
         }
       });
 
       if (!options.some((o) => o.isCorrect)) {
-        errors.push(`Row ${rowNumber}: No correct answer`);
+        errors.push(t("rowNoCorrectAnswer", { row: rowNumber }));
         return;
       }
 
@@ -120,8 +122,8 @@ export default function ImportPage() {
       setPreview(parsed.questions);
       setErrors(parsed.errors);
     } catch (err) {
-      toast.error("Failed to read file", {
-        description: err instanceof Error ? err.message : "Unknown error",
+      toast.error(t("fileReadFailed"), {
+        description: err instanceof Error ? err.message : t("unknownError"),
       });
     }
   };
@@ -136,22 +138,22 @@ export default function ImportPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: "Imported Quiz",
+          title: t("importedQuizTitle"),
           questions: preview,
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Import failed");
+        throw new Error(t("importFailed"));
       }
 
-      toast.success("Quiz imported successfully");
+      toast.success(t("importSuccess"));
       setFileName(null);
       setPreview([]);
       setErrors([]);
     } catch (err) {
-      toast.error("Import failed", {
-        description: err instanceof Error ? err.message : "Unknown error",
+      toast.error(t("importFailed"), {
+        description: err instanceof Error ? err.message : t("unknownError"),
       });
     } finally {
       setLoading(false);
@@ -163,16 +165,16 @@ export default function ImportPage() {
 
     const templateData = [
       {
-        Question: "Ibukota Jepang?",
+        Question: t("templateQuestionCapital"),
         TimeLimit: 30,
-        Option1: "Tokyo",
-        Option2: "Osaka",
-        Option3: "Kyoto",
-        Option4: "Nagoya",
+        Option1: t("templateOptionTokyo"),
+        Option2: t("templateOptionOsaka"),
+        Option3: t("templateOptionKyoto"),
+        Option4: t("templateOptionNagoya"),
         Correct: "1",
       },
       {
-        Question: "Pilih bilangan prima",
+        Question: t("templateQuestionPrime"),
         TimeLimit: 45,
         Option1: "2",
         Option2: "3",
@@ -213,9 +215,7 @@ export default function ImportPage() {
             >
               <input {...getInputProps()} />
               <p className="text-gray-600">
-                {fileName
-                  ? `Selected: ${fileName}`
-                  : t("dropzone")}
+                {fileName ? t("selectedFile", { fileName }) : t("dropzone")}
               </p>
             </div>
 
@@ -255,7 +255,9 @@ export default function ImportPage() {
                     className="rounded-xl border bg-white p-4 shadow-sm"
                   >
                     <div className="font-semibold">{q.text}</div>
-                    <div className="text-xs text-gray-500">{q.timeLimit}s</div>
+                    <div className="text-xs text-gray-500">
+                      {t("timeLimit", { seconds: q.timeLimit })}
+                    </div>
 
                     <ul className="mt-2 space-y-1">
                       {q.options.map((o, idx) => (
@@ -277,7 +279,7 @@ export default function ImportPage() {
                   disabled={errors.length > 0 || loading}
                   className="disabled:opacity-50"
                 >
-                  {loading ? "Importing..." : "Import Quiz"}
+                  {loading ? t("importing") : t("importQuiz")}
                 </Button>
               </div>
             )}

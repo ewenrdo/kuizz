@@ -53,7 +53,7 @@ export default function ProfilePage() {
       setName(data.name ?? "");
       setAvatarConfig(data.avatar ?? null);
     } catch {
-      toast.error("Failed to load profile");
+      toast.error(t("failedToLoadProfile"));
     } finally {
       setLoading(false);
     }
@@ -68,10 +68,10 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
       });
       if (!res.ok) throw new Error();
-      toast.success("Profile updated!");
+      toast.success(t("profileUpdated"));
       setProfile((p) => (p ? { ...p, name } : p));
     } catch {
-      toast.error("Failed to update profile");
+      toast.error(t("failedToUpdateProfile"));
     } finally {
       setSavingProfile(false);
     }
@@ -79,7 +79,7 @@ export default function ProfilePage() {
 
   const handleSavePassword = async () => {
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(t("pwdDoesNotMatch"));
       return;
     }
     setSavingPassword(true);
@@ -91,12 +91,12 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      toast.success("Password changed!");
+      toast.success(t("passwordChanged"));
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      toast.error("Failed to change password", {
+      toast.error(t("failedToChangePassword"), {
         description: err instanceof Error ? err.message : "Unknown error",
       });
     } finally {
@@ -114,9 +114,9 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
       });
       if (!res.ok) throw new Error();
-      toast.success("Avatar saved!");
+      toast.success(t("avatarSaved"));
     } catch {
-      toast.error("Failed to save avatar");
+      toast.error(t("failedToSaveAvatar"));
     } finally {
       setSavingAvatar(false);
     }
@@ -272,10 +272,10 @@ export default function ProfilePage() {
           </div>
           <div>
             <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
-              My Avatar
+              {t("myAvatar")}
             </h3>
             <p className="text-sm text-gray-500">
-              Customize your avatar — shown when you join a game
+              {t("avatarDescription")}
             </p>
           </div>
         </div>
@@ -292,7 +292,7 @@ export default function ProfilePage() {
           ) : (
             <Save size={16} />
           )}
-          Save Avatar
+          {t("saveAvatar")}
         </button>
       </div>
     </div>
