@@ -11,7 +11,14 @@
   "Header": {
     "play": "Jouer", 
     "searchPlaceholder": "Trouver un quiz...",
-    "searchNotImplemented": "La fonction de recherche n'est pas encore implémentée."
+    "searchNotImplemented": "La fonction de recherche n'est pas encore implémentée.",
+    "toggleSidebar": "Ouvrir ou fermer la barre latérale",
+    "logout": "Se déconnecter",
+    "changeLanguage": "Changer de langue",
+    "languages": {
+      "english": "Anglais",
+      "french": "Français"
+    }
   },
   "Sidebar": {
     "dashboard": "Tableau de bord",

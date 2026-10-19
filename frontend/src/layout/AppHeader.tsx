@@ -1,13 +1,30 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/SidebarContext";
-import { LogOut, Search } from "lucide-react";
-import { useRouter } from "next/dist/client/components/navigation";
+import {
+  Check,
+  ChevronDown,
+  Languages,
+  LogOut,
+  Search,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import React, { useEffect, useRef } from "react";
 import { logout } from "@/lib/auth";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const supportedLocales = [
+  { code: "en", labelKey: "english" },
+  { code: "fr", labelKey: "french" },
+] as const;
 
 const AppHeader: React.FC = () => {
   const { toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -22,6 +39,7 @@ const AppHeader: React.FC = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations("Header");
+  const locale = useLocale();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -43,6 +61,12 @@ const AppHeader: React.FC = () => {
     router.push("/login");
   }
 
+  function handleLanguageChange(nextLocale: string) {
+    if (nextLocale === locale) return;
+
+    document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000`;
+    router.refresh();
+  }
 
   return (
     <header className="sticky top-0 z-40 flex h-[72px] w-full border-b border-gray-100 bg-white">
@@ -52,7 +76,7 @@ const AppHeader: React.FC = () => {
           <button
             className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100"
             onClick={handleToggle}
-            aria-label="Toggle Sidebar"
+            aria-label={t("toggleSidebar")}
           >
             <svg
               width="24"
@@ -107,7 +131,40 @@ const AppHeader: React.FC = () => {
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full border-2 border-white bg-red-500"></span>
           </button>*/}
 
-          <button onClick={handleLogout} className="relative rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="flex items-center gap-1.5 rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100"
+                aria-label={t("changeLanguage")}
+              >
+                <Languages size={20} />
+                <span className="hidden text-xs font-semibold uppercase sm:inline">
+                  {locale}
+                </span>
+                <ChevronDown size={14} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-36">
+              {supportedLocales.map((supportedLocale) => (
+                <DropdownMenuItem
+                  key={supportedLocale.code}
+                  onSelect={() => handleLanguageChange(supportedLocale.code)}
+                  className="justify-between"
+                >
+                  {t(`languages.${supportedLocale.labelKey}`)}
+                  {locale === supportedLocale.code && (
+                    <Check className="h-4 w-4" />
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <button
+            onClick={handleLogout}
+            className="relative rounded-full p-2 text-gray-600 transition-colors hover:bg-gray-100"
+            aria-label={t("logout")}
+          >
             <LogOut size={20} />
           </button>
 

@@ -11,7 +11,14 @@
   "Header": {
     "play": "Play", 
     "searchPlaceholder": "Find a Quiz...",
-    "searchNotImplemented": "Search functionality is not implemented yet."
+    "searchNotImplemented": "Search functionality is not implemented yet.",
+    "toggleSidebar": "Toggle sidebar",
+    "logout": "Log out",
+    "changeLanguage": "Change language",
+    "languages": {
+      "english": "English",
+      "french": "French"
+    }
   },
   "Sidebar": {
     "dashboard": "Dashboard",
