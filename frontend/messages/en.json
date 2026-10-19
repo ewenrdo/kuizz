@@ -8,6 +8,11 @@
     "createGame": "Create Game",
     "startGame": "Start Game"
   },
+  "Header": {
+    "play": "Play", 
+    "searchPlaceholder": "Find a Quiz...",
+    "searchNotImplemented": "Search functionality is not implemented yet."
+  },
   "Sidebar": {
     "dashboard": "Dashboard",
     "myQuizzes": "My Quizzes",
@@ -20,6 +25,8 @@
     "logout": "Logout"
   },
   "Dashboard": {
+    "home": "Home",
+    "overview": "Dashboard Overview",
     "totalQuizzes": "Total Quizzes",
     "gamesHosted": "Games Hosted",
     "totalPlayers": "Total Players",
@@ -35,7 +42,11 @@
     "barChart": "Bar Chart",
     "barChartOne": "Bar Chart 1",
     "lineChart": "Line Chart",
-    "lineChartOne": "Line Chart 1"
+    "lineChartOne": "Line Chart 1",
+    "finished": "Finished",
+    "started": "Started",
+    "waiting": "Waiting",
+    "aborted": "Aborted"
   },
   "QuizImport": {
     "title": "Import Quiz",

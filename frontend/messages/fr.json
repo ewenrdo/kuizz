@@ -8,6 +8,11 @@
     "createGame": "Créer une partie",
     "startGame": "Démarrer la partie"
   },
+  "Header": {
+    "play": "Jouer", 
+    "searchPlaceholder": "Trouver un quiz...",
+    "searchNotImplemented": "La fonction de recherche n'est pas encore implémentée."
+  },
   "Sidebar": {
     "dashboard": "Tableau de bord",
     "myQuizzes": "Mes quiz",
@@ -20,6 +25,8 @@
     "logout": "Déconnexion"
   },
   "Dashboard": {
+    "home": "Accueil",
+    "overview": "Aperçu du tableau de bord",
     "totalQuizzes": "Total des quiz",
     "gamesHosted": "Parties organisées",
     "totalPlayers": "Nombre total de joueurs",
@@ -35,7 +42,11 @@
     "barChart": "Graphique à barres",
     "barChartOne": "Graphique à barres 1",
     "lineChart": "Graphique linéaire",
-    "lineChartOne": "Graphique linéaire 1"
+    "lineChartOne": "Graphique linéaire 1",
+    "finished": "Terminée",
+    "started": "Démarrée",
+    "waiting": "En attente",
+    "aborted": "Abandonnée"
   },
   "QuizImport": {
     "title": "Importer un quiz",

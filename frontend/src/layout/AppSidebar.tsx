@@ -12,11 +12,8 @@ import { AvatarModel } from "@/types";
 import { UserModelType } from "@/types";
 import {
   BarChart2,
-  FolderOpen,
-  Globe,
   Grid,
   HelpCircle,
-  Users,
   ChevronDownIcon,
   Download,
   Gamepad2,

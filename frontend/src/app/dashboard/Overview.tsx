@@ -89,7 +89,7 @@ export default function Overview() {
 
   return (
     <>
-      <PageBreadcrumb pageTitle="Dashboard Overview" />
+      <PageBreadcrumb pageTitle={t("overview")} />
 
       {/* Metric Cards Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-4">
@@ -215,7 +215,7 @@ export default function Overview() {
                             : "bg-gray-50 text-gray-700 dark:bg-gray-950 dark:text-gray-300"
                       }
                     >
-                      {game.status}
+                      {t(game.status.toLowerCase()).toUpperCase()}
                     </Badge>
                     <span className="text-xs font-medium text-gray-500">
                       {game.totalPlayers} {t("players")}

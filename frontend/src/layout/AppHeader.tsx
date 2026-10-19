@@ -1,12 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/SidebarContext";
-import { Bell, LogOut, Search } from "lucide-react";
+import { LogOut, Search } from "lucide-react";
 import { useRouter } from "next/dist/client/components/navigation";
 import Link from "next/link";
 import React, { useEffect, useRef } from "react";
 import { logout } from "@/lib/auth";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 const AppHeader: React.FC = () => {
   const { toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -20,6 +21,7 @@ const AppHeader: React.FC = () => {
   };
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations("Header");
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -84,12 +86,12 @@ const AppHeader: React.FC = () => {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Find a quiz..."
+                placeholder={t("searchPlaceholder")}
                 className="h-11 w-full rounded-full border-transparent bg-gray-50 pr-4 pl-11 text-sm text-gray-900 transition-all outline-none placeholder:text-gray-400 focus:border-gray-200 focus:bg-white focus:ring-4 focus:ring-[#46178f]/5"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    toast.info("Search functionality is not implemented yet.");
+                    toast.info(t("searchNotImplemented"));
                   }
                 }}
               />
@@ -111,7 +113,7 @@ const AppHeader: React.FC = () => {
 
           {/* Upgrade Button */}
           <Button className="rounded-full bg-[#46178f] px-6 font-semibold text-white shadow-sm transition-all hover:bg-[#3b127a] hover:shadow-lg hover:shadow-[#46178f]/20" onClick={() => router.push("/join")}>
-            Play
+            {t("play")}
           </Button>
         </div>
       </div>
