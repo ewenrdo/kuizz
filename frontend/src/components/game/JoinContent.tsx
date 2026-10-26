@@ -41,29 +41,7 @@ export default function JoinContent() {
   const [avatar, setAvatar] = useState<AvatarModel | null>(null);
 
   useEffect(() => {
-    // Injection Eruda pour débogage mobile
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/eruda";
-    script.onload = () => {
-      // @ts-expect-error Eruda chargé dynamiquement
-      if (window.eruda) window.eruda.init();
-    };
-    document.body.appendChild(script);
-
-    // Écoute des erreurs globales de connexion socket
-    const onConnectError = (err: Error) => {
-      console.error("[SOCKET-ERROR] Échec de connexion :", err.message);
-    };
-
-    const onConnectSuccess = () => {
-      console.log("[SOCKET-SUCCESS] Socket connecté ! ID :", socket.id);
-    };
-
-    socket.on("connect_error", onConnectError);
-    socket.on("connect", onConnectSuccess);
-
     if (!socket.connected) {
-      console.log("[SOCKET] Initialisation de la connexion...");
       socket.connect();
     }
 
@@ -83,11 +61,6 @@ export default function JoinContent() {
       setAvatar(getRandomAvatar());
     };
     fetchAvatar();
-
-    return () => {
-      socket.off("connect_error", onConnectError);
-      socket.off("connect", onConnectSuccess);
-    };
   }, []);
 
   useEffect(() => {
@@ -96,8 +69,6 @@ export default function JoinContent() {
   }, [searchParams]);
 
   const handleCheckRoom = () => {
-    console.log("[JOIN-STEP1] Début check_room pour le code :", code);
-
     if (!code) return;
 
     setLoading(true);
@@ -106,19 +77,16 @@ export default function JoinContent() {
     let timeoutId: NodeJS.Timeout;
 
     const emitCheck = () => {
-      console.log("[JOIN-STEP1] Connecté ! Émission de check_room...");
       socket.emit("check_room", { roomCode: code });
     };
 
     const onRoomValid = () => {
-      console.log("[JOIN-STEP1] Succès : room_valid reçu !");
       cleanupStep1Listeners();
       setLoading(false);
       setStep(2);
     };
 
     const onRoomError = (errorMessage: string) => {
-      console.warn("[JOIN-STEP1] Erreur reçue :", errorMessage);
       cleanupStep1Listeners();
       setError(errorMessage);
       setLoading(false);
@@ -134,9 +102,8 @@ export default function JoinContent() {
     };
 
     timeoutId = setTimeout(() => {
-      console.error("[JOIN-STEP1] TIMEOUT : Aucune réponse du serveur !");
       cleanupStep1Listeners();
-      setError("Impossible de joindre le serveur. Vérifiez l'adresse IP / le réseau.");
+      setError("Time out. Cannot check the room. Please try again.");
       setLoading(false);
     }, 6000);
 
@@ -146,7 +113,6 @@ export default function JoinContent() {
     socket.on("game_already_started", () => onRoomError(t("roomAlreadyStarted")));
 
     if (!socket.connected) {
-      console.log("[JOIN-STEP1] Socket déconnecté, attente de l'événement connect...");
       socket.once("connect", emitCheck);
       socket.connect();
     } else {
@@ -155,8 +121,6 @@ export default function JoinContent() {
   };
 
   const handleJoin = async () => {
-    console.log("[JOIN-STEP2] Début handleJoin pour :", { code, nick });
-
     if (!nick || !code) return;
 
     setLoading(true);
@@ -170,7 +134,6 @@ export default function JoinContent() {
       savedRoom === code ? localStorage.getItem("playerToken") : null;
 
     const emitJoin = () => {
-      console.log("[JOIN-STEP2] Connecté ! Émission de join_room...");
       socket.emit("join_room", {
         roomCode: code,
         nickname: nick,
@@ -181,7 +144,6 @@ export default function JoinContent() {
     };
 
     const onPlayerRegistered = (data: { playerToken: string }) => {
-      console.log("[JOIN-STEP2] Enregistré ! Token :", data.playerToken);
       cleanupStep2Listeners();
       localStorage.setItem("nickname", nick);
       localStorage.setItem("roomCode", code);
@@ -194,14 +156,12 @@ export default function JoinContent() {
     };
 
     const onNicknameTaken = () => {
-      console.warn("[JOIN-STEP2] Pseudo déjà pris.");
       cleanupStep2Listeners();
       setError("Nickname sudah dipakai. Silakan coba yang lain.");
       setLoading(false);
     };
 
     const onActionError = (errorMessage: string) => {
-      console.warn("[JOIN-STEP2] Erreur d'action :", errorMessage);
       cleanupStep2Listeners();
       setError(errorMessage);
       setLoading(false);
@@ -218,9 +178,8 @@ export default function JoinContent() {
     };
 
     timeoutId = setTimeout(() => {
-      console.error("[JOIN-STEP2] TIMEOUT : Aucune réponse du serveur !");
       cleanupStep2Listeners();
-      setError("Impossible de rejoindre la partie. Réessayer.");
+      setError("Impossible de rejoindre la partie. Réessayez.");
       setLoading(false);
     }, 6000);
 
@@ -231,7 +190,6 @@ export default function JoinContent() {
     socket.on("game_already_started", () => onActionError("Game already started."));
 
     if (!socket.connected) {
-      console.log("[JOIN-STEP2] Socket déconnecté, attente de l'événement connect...");
       socket.once("connect", emitJoin);
       socket.connect();
     } else {
