@@ -184,9 +184,16 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
   const handleStartGame = (quizId: string) => {
     if (loading) return;
 
+    let token = getAccessToken();
+    if(!token) {
+      console.error("No access token found. Please log in.");
+      return;
+    }
+
     setLoading(true);
 
     if (!socket.connected) {
+      console.warn("Socket not connected. Attempting to connect...");
       socket.connect();
     }
 
@@ -200,11 +207,12 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
 
     socket.once("connect_error", () => {
       setLoading(false);
+      console.error("Socket connection error. Please try again.");
     });
 
     socket.emit("create_game", {
       quizId,
-      token: getAccessToken(),
+      token
     });
   };
 

@@ -283,6 +283,7 @@ export class GameGateway {
     data: {
       roomCode: string;
       selectedOptionId: string;
+      playerToken?: string;
     },
     @ConnectedSocket() client: CustomSocket,
   ) {
@@ -292,7 +293,7 @@ export class GameGateway {
     if (info.phase !== 'QUESTION') return;
     if (!info.questionStartTime) return;
 
-    const playerToken = client.data.playerToken;
+    const playerToken = data.playerToken || client.data.playerToken;
     if (!playerToken) return;
 
     // ATOMIC SUBMISION (HSETNX guarantees only first answer applies)
@@ -332,8 +333,15 @@ export class GameGateway {
       return;
     }
 
-    if (!client.data.playerToken && data.playerToken) {
-      client.data.playerToken = data.playerToken;
+    const playerTokenToUse = data.playerToken || client.data.playerToken;
+
+    if (playerTokenToUse) {
+      client.data.playerToken = playerTokenToUse;
+      await this.gameService.updatePlayerId(
+        data.roomCode,
+        playerTokenToUse,
+        client.id,
+      );
     }
 
     void client.join(data.roomCode);
