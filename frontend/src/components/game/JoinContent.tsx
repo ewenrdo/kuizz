@@ -41,7 +41,29 @@ export default function JoinContent() {
   const [avatar, setAvatar] = useState<AvatarModel | null>(null);
 
   useEffect(() => {
+    // Injection Eruda pour débogage mobile
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/eruda";
+    script.onload = () => {
+      // @ts-expect-error Eruda chargé dynamiquement
+      if (window.eruda) window.eruda.init();
+    };
+    document.body.appendChild(script);
+
+    // Écoute des erreurs globales de connexion socket
+    const onConnectError = (err: Error) => {
+      console.error("[SOCKET-ERROR] Échec de connexion :", err.message);
+    };
+
+    const onConnectSuccess = () => {
+      console.log("[SOCKET-SUCCESS] Socket connecté ! ID :", socket.id);
+    };
+
+    socket.on("connect_error", onConnectError);
+    socket.on("connect", onConnectSuccess);
+
     if (!socket.connected) {
+      console.log("[SOCKET] Initialisation de la connexion...");
       socket.connect();
     }
 
@@ -61,6 +83,11 @@ export default function JoinContent() {
       setAvatar(getRandomAvatar());
     };
     fetchAvatar();
+
+    return () => {
+      socket.off("connect_error", onConnectError);
+      socket.off("connect", onConnectSuccess);
+    };
   }, []);
 
   useEffect(() => {
@@ -69,53 +96,92 @@ export default function JoinContent() {
   }, [searchParams]);
 
   const handleCheckRoom = () => {
+    console.log("[JOIN-STEP1] Début check_room pour le code :", code);
+
     if (!code) return;
 
     setLoading(true);
     setError(null);
 
-    // One-time listeners for step 1
+    let timeoutId: NodeJS.Timeout;
+
+    const emitCheck = () => {
+      console.log("[JOIN-STEP1] Connecté ! Émission de check_room...");
+      socket.emit("check_room", { roomCode: code });
+    };
+
     const onRoomValid = () => {
+      console.log("[JOIN-STEP1] Succès : room_valid reçu !");
       cleanupStep1Listeners();
       setLoading(false);
-      setStep(2); // Proceed to nickname phase
+      setStep(2);
     };
 
     const onRoomError = (errorMessage: string) => {
+      console.warn("[JOIN-STEP1] Erreur reçue :", errorMessage);
       cleanupStep1Listeners();
       setError(errorMessage);
       setLoading(false);
     };
 
-    const onRoomNotFound = () => onRoomError(t("roomNotFound2"));
-    const onRoomLocked = () => onRoomError(t("roomLocked2"));
-    const onGameStarted = () => onRoomError(t("roomAlreadyStarted"));
-
     const cleanupStep1Listeners = () => {
+      clearTimeout(timeoutId);
+      socket.off("connect", emitCheck);
       socket.off("room_valid", onRoomValid);
-      socket.off("room_not_found", onRoomNotFound);
-      socket.off("room_locked", onRoomLocked);
-      socket.off("game_already_started", onGameStarted);
+      socket.off("room_not_found");
+      socket.off("room_locked");
+      socket.off("game_already_started");
     };
 
-    socket.on("room_valid", onRoomValid);
-    socket.on("room_not_found", onRoomNotFound);
-    socket.on("room_locked", onRoomLocked);
-    socket.on("game_already_started", onGameStarted);
+    timeoutId = setTimeout(() => {
+      console.error("[JOIN-STEP1] TIMEOUT : Aucune réponse du serveur !");
+      cleanupStep1Listeners();
+      setError("Impossible de joindre le serveur. Vérifiez l'adresse IP / le réseau.");
+      setLoading(false);
+    }, 6000);
 
-    socket.emit("check_room", { roomCode: code });
+    socket.on("room_valid", onRoomValid);
+    socket.on("room_not_found", () => onRoomError(t("roomNotFound2")));
+    socket.on("room_locked", () => onRoomError(t("roomLocked2")));
+    socket.on("game_already_started", () => onRoomError(t("roomAlreadyStarted")));
+
+    if (!socket.connected) {
+      console.log("[JOIN-STEP1] Socket déconnecté, attente de l'événement connect...");
+      socket.once("connect", emitCheck);
+      socket.connect();
+    } else {
+      emitCheck();
+    }
   };
 
   const handleJoin = async () => {
+    console.log("[JOIN-STEP2] Début handleJoin pour :", { code, nick });
+
     if (!nick || !code) return;
 
     setLoading(true);
     setError(null);
 
+    let timeoutId: NodeJS.Timeout;
     const avatarToSend = avatar || getRandomAvatar();
-    const existingToken = localStorage.getItem("playerToken");
+
+    const savedRoom = localStorage.getItem("roomCode");
+    const existingToken =
+      savedRoom === code ? localStorage.getItem("playerToken") : null;
+
+    const emitJoin = () => {
+      console.log("[JOIN-STEP2] Connecté ! Émission de join_room...");
+      socket.emit("join_room", {
+        roomCode: code,
+        nickname: nick,
+        playerToken: existingToken ?? undefined,
+        avatar: avatarToSend,
+        authToken: getAccessToken() ?? undefined,
+      });
+    };
 
     const onPlayerRegistered = (data: { playerToken: string }) => {
+      console.log("[JOIN-STEP2] Enregistré ! Token :", data.playerToken);
       cleanupStep2Listeners();
       localStorage.setItem("nickname", nick);
       localStorage.setItem("roomCode", code);
@@ -128,46 +194,51 @@ export default function JoinContent() {
     };
 
     const onNicknameTaken = () => {
+      console.warn("[JOIN-STEP2] Pseudo déjà pris.");
       cleanupStep2Listeners();
       setError("Nickname sudah dipakai. Silakan coba yang lain.");
       setLoading(false);
     };
 
-    // Failsafe error handling in case the game state changed between Step 1 and Step 2
     const onActionError = (errorMessage: string) => {
+      console.warn("[JOIN-STEP2] Erreur d'action :", errorMessage);
       cleanupStep2Listeners();
       setError(errorMessage);
       setLoading(false);
     };
 
-    const onRoomNotFound = () => onActionError("Room not found. It might have been closed.");
-    const onRoomLocked = () => onActionError("Room is locked by the host.");
-    const onGameStarted = () => onActionError("Game has already started.");
-
     const cleanupStep2Listeners = () => {
+      clearTimeout(timeoutId);
+      socket.off("connect", emitJoin);
       socket.off("player_registered", onPlayerRegistered);
       socket.off("nickname_taken", onNicknameTaken);
-      socket.off("room_not_found", onRoomNotFound);
-      socket.off("room_locked", onRoomLocked);
-      socket.off("game_already_started", onGameStarted);
+      socket.off("room_not_found");
+      socket.off("room_locked");
+      socket.off("game_already_started");
     };
+
+    timeoutId = setTimeout(() => {
+      console.error("[JOIN-STEP2] TIMEOUT : Aucune réponse du serveur !");
+      cleanupStep2Listeners();
+      setError("Impossible de rejoindre la partie. Réessayer.");
+      setLoading(false);
+    }, 6000);
 
     socket.on("player_registered", onPlayerRegistered);
     socket.on("nickname_taken", onNicknameTaken);
-    socket.on("room_not_found", onRoomNotFound);
-    socket.on("room_locked", onRoomLocked);
-    socket.on("game_already_started", onGameStarted);
+    socket.on("room_not_found", () => onActionError("Room not found."));
+    socket.on("room_locked", () => onActionError("Room is locked."));
+    socket.on("game_already_started", () => onActionError("Game already started."));
 
-    socket.emit("join_room", {
-      roomCode: code,
-      nickname: nick,
-      playerToken: existingToken ?? undefined,
-      avatar: avatarToSend,
-      authToken: getAccessToken() ?? undefined,
-    });
+    if (!socket.connected) {
+      console.log("[JOIN-STEP2] Socket déconnecté, attente de l'événement connect...");
+      socket.once("connect", emitJoin);
+      socket.connect();
+    } else {
+      emitJoin();
+    }
   };
 
-  // Convert standard avatar ID syntax to URL if needed (e.g. dicebear)
   const renderAvatarPreview = () => {
     return (
       <div className="absolute -top-10 left-1/2 z-20 flex h-20 w-20 -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border-4 border-[#1a1025] bg-white shadow-xl">
@@ -203,10 +274,9 @@ export default function JoinContent() {
             font-family: ${fredoka.style.fontFamily}, sans-serif;
         }
 
-        /* Ambient glowing shapes */
         .ambient-shape {
             position: absolute;
-            background: rgba(170, 51, 255, 0.05); /* very subtle purple */
+            background: rgba(170, 51, 255, 0.05);
             z-index: 0;
             pointer-events: none;
         }
@@ -221,7 +291,7 @@ export default function JoinContent() {
             height: 0;
             border-left: 50px solid transparent;
             border-right: 50px solid transparent;
-            border-bottom: 86px solid rgba(170, 51, 255, 0.08); /* triangle */
+            border-bottom: 86px solid rgba(170, 51, 255, 0.08);
             background: transparent;
         }
         
@@ -243,7 +313,6 @@ export default function JoinContent() {
             z-index: 10;
         }
         
-        /* Specific background for step 2 */
         .glass-panel-step2 {
             background-image: 
               radial-gradient(circle at top right, rgba(170, 51, 255, 0.3), transparent 50%),
@@ -292,7 +361,6 @@ export default function JoinContent() {
             box-shadow: none;
         }
         
-        /* Top lightning icon floating animation */
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
@@ -306,7 +374,6 @@ export default function JoinContent() {
         }}
       />
 
-      {/* Decorative Background Shapes */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div className="ambient-shape shape-circle top-[10%] left-[10%] h-40 w-40"></div>
         <div className="ambient-shape shape-triangle top-[30%] right-[20%] rotate-12"></div>
@@ -322,7 +389,6 @@ export default function JoinContent() {
       </div>
 
       <div className="relative z-10 flex min-h-screen w-full flex-col bg-(--bg-dark)">
-        {/* Navbar */}
         <nav className="flex w-full items-center justify-between p-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 -rotate-12 transform items-center justify-center rounded-lg bg-(--primary-accent) shadow-(--primary-accent)/30 shadow-lg">
@@ -351,7 +417,6 @@ export default function JoinContent() {
           </div>
         </nav>
 
-        {/* Main Content */}
         <main className="flex flex-1 flex-col items-center justify-center p-4">
           {step === 1 && (
             <div className="floating-icon mb-8 flex h-20 w-20 rotate-3 items-center justify-center rounded-2xl bg-(--primary-accent) shadow-(--primary-accent)/30 shadow-lg">
@@ -363,13 +428,10 @@ export default function JoinContent() {
             <div
               className={`glass-panel w-full p-8 md:p-10 ${step === 2 ? "glass-panel-step2" : ""}`}
             >
-              {/* Avatar overlap for Step 2 */}
               {step === 2 && renderAvatarPreview()}
 
               <div className={`mb-8 text-center ${step === 2 ? "mt-4" : ""}`}>
-                <h1
-                  className={`header-font mb-2 text-3xl font-bold text-white`}
-                >
+                <h1 className="header-font mb-2 text-3xl font-bold text-white">
                   {step === 1 ? t("enterGamePin") : t("joinFun")}
                 </h1>
                 <p className="text-sm font-medium text-[var(--text-dim)]">
@@ -484,7 +546,6 @@ export default function JoinContent() {
           </div>
         </main>
 
-        {/* Footer */}
         <footer className="w-full py-6 text-center">
           <div className="flex items-center justify-center gap-4 text-xs font-bold text-[var(--text-dim)] opacity-50">
             {step === 1 ? (

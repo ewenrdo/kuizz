@@ -7,10 +7,13 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { Prisma, Quiz } from '../generated/prisma/client.js';
 import { CreateQuizDto, UpdateQuizDto } from 'src/lib/dto.js';
 import ExcelJS from 'exceljs';
+import { JwtService } from '@nestjs/jwt/dist/index.js';
 
 @Injectable()
 export class QuizService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService,
+    private jwtService: JwtService
+  ) { }
 
   async findAll(userId: string) {
     return this.prisma.quiz.findMany({
@@ -43,9 +46,40 @@ export class QuizService {
     });
   }
 
-  async findOne(id: string) {
-    const quiz = await this.prisma.quiz.findUnique({
-      where: { id },
+
+  async findOneWithAuthHeader(id: string, authHeader?: string) {
+    let userId: string | undefined;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const payload = await this.jwtService.verifyAsync(token);
+        userId = payload?.id || payload?.sub;
+      } catch {
+        // Token invalide, expiré ou falsifié
+      }
+    }
+
+    return this.findOne(id, userId);
+  }
+
+  async findOne(id: string, userId?: string) {
+    const quiz = await this.prisma.quiz.findFirst({
+      where: {
+        id,
+        OR: [{
+          visibility: 'PUBLIC',
+        },
+        { ownerId: userId ?? '' },
+        {
+          sharedWith: {
+            some: {
+              userId: userId ?? '',
+            },
+          },
+        }
+        ]
+      },
       include: {
         questions: {
           include: {
@@ -99,9 +133,16 @@ export class QuizService {
     });
   }
 
-  async updateQuiz(id: string, body: UpdateQuizDto) {
-    const existing = await this.prisma.quiz.findUnique({
-      where: { id },
+
+  async updateQuiz(id: string, body: UpdateQuizDto, userId: string) {
+    const existing = await this.prisma.quiz.findFirst({
+      where: {
+        id,
+        OR: [
+          { ownerId: userId },
+          { sharedWith: { some: { userId } } },
+        ],
+      },
     });
 
     if (!existing) {
@@ -152,9 +193,9 @@ export class QuizService {
     });
   }
 
-  async deleteQuiz(id: string) {
+  async deleteQuiz(id: string, userId: string) {
     const existing = await this.prisma.quiz.findUnique({
-      where: { id },
+      where: { id, ownerId: userId },
     });
 
     if (!existing) {
@@ -168,9 +209,9 @@ export class QuizService {
     return { message: 'Quiz deleted successfully' };
   }
 
-  async toggleFavorite(id: string) {
+  async toggleFavorite(id: string, userId: string) {
     const existing = await this.prisma.quiz.findUnique({
-      where: { id },
+      where: { id, ownerId: userId },
     });
 
     if (!existing) {
@@ -185,9 +226,16 @@ export class QuizService {
     return updated;
   }
 
-  async exportQuiz(id: string): Promise<Buffer> {
-    const quiz = await this.prisma.quiz.findUnique({
-      where: { id },
+  async exportQuiz(id: string, userId: string) {
+    const quiz = await this.prisma.quiz.findFirst({
+      where: {
+        id,
+        OR: [
+          { visibility: 'PUBLIC' },
+          { ownerId: userId },
+          { sharedWith: { some: { userId } } },
+        ],
+      },
       include: {
         questions: {
           include: { options: true },
@@ -251,6 +299,10 @@ export class QuizService {
     const worksheet = workbook.worksheets[0];
     if (!worksheet) {
       throw new BadRequestException('Worksheet not found');
+    }
+
+    if(worksheet.rowCount > 100) {
+      throw new BadRequestException('Maximum 100 questions allowed'); // prevent abuse and performance issues such as DoS attacks
     }
 
     const headerRow = worksheet.getRow(1);
@@ -372,10 +424,10 @@ export class QuizService {
       return quiz;
     });
   }
- 
-  async shareQuizWithEmail(quizId: string, email: string) {
+
+  async shareQuizWithEmail(quizId: string, email: string, ownerId: string) {
     const quiz = await this.prisma.quiz.findUnique({
-      where: { id: quizId },
+      where: { id: quizId, ownerId },
       include: { sharedWith: true },
     });
 
@@ -409,9 +461,9 @@ export class QuizService {
     return { message: 'Quiz shared successfully' };
   }
 
-  async unshareQuizWithUser(quizId: string, userId: string) {
+  async unshareQuizWithUser(quizId: string, userId: string, senderId: string) {
     const quiz = await this.prisma.quiz.findUnique({
-      where: { id: quizId },
+      where: { id: quizId, ownerId: senderId },
       include: { sharedWith: true },
     });
 
