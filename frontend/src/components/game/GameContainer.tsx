@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PlayerModel } from "@/types";
 import { useAudioManager } from "@/lib/useAudioManager";
+import AudioVolumeControl from "./AudioVolumeControl";
 
 type GamePhase =
   | "WAITING"
@@ -69,6 +70,12 @@ export default function GameContainer({ roomCode }: GameContainerProps) {
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [now, setNow] = useState(Date.now());
   const router = useRouter();
+
+  useEffect(() => {
+    const hostToken = localStorage.getItem("hostToken");
+    const hostRoom = localStorage.getItem("hostRoom");
+    setIsHost(Boolean(hostToken && hostRoom === roomCode));
+  }, [roomCode]);
 
   const handleLeaveGame = () => {
     localStorage.removeItem("guestAvatar");
@@ -261,6 +268,7 @@ export default function GameContainer({ roomCode }: GameContainerProps) {
 
   return (
     <div className="relative min-h-screen">
+      {isHost && <AudioVolumeControl />}
       {isHost &&
         phase !== "FINISHED" &&
         phase !== "QUESTION" &&

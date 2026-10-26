@@ -36,10 +36,15 @@ export default function FinalResult({
   const [localAvatar, setLocalAvatar] = useState<AvatarModel | null>(null);
 
   useEffect(() => {
+    if (!isHost) {
+      stopAll();
+      return;
+    }
+
     playVictoryBgm();
 
     return stopAll;
-  }, [playVictoryBgm, stopAll]);
+  }, [isHost, playVictoryBgm, stopAll]);
 
   useEffect(() => {
     const stored = localStorage.getItem("guestAvatar");

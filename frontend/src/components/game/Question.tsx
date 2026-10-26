@@ -169,7 +169,7 @@ export default function Question({
           </h1>
         </div>
 
-        {/* Image Context Placeholder */}
+        {/* Image Context Placeholder 
         <div className="relative mb-6 flex h-40 w-full items-center justify-center overflow-hidden rounded-[20px] bg-linear-to-br from-[#bcc4a9] to-[#5b6a50] shadow-inner md:h-64 md:rounded-[24px]">
           <span className="text-[120px] font-bold text-white/20 select-none md:text-[200px]">
             ?
@@ -180,7 +180,7 @@ export default function Question({
               Image Context
             </span>
           </div>
-        </div>
+        </div>*/}
 
         {/* Options Grid */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">

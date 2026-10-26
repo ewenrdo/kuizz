@@ -11,13 +11,17 @@ const SOUND_PATHS: Record<BackgroundTrack | "click", string> = {
   click: "/sounds/click.mp3",
 };
 
-const listeners = new Set<(isMuted: boolean) => void>();
+const listeners = new Set<
+  (state: { isMuted: boolean; volume: number }) => void
+>();
 let isMuted = false;
+let volume = 0.8;
 let backgroundAudio: HTMLAudioElement | null = null;
+let backgroundBaseVolume = 0.3;
 const effectAudio = new Set<HTMLAudioElement>();
 
 const notifyMuteChange = () => {
-  listeners.forEach((listener) => listener(isMuted));
+  listeners.forEach((listener) => listener({ isMuted, volume }));
 };
 
 const handlePlaybackError = (error: unknown, source: string) => {
@@ -43,14 +47,19 @@ const stopBackground = () => {
   backgroundAudio = null;
 };
 
-const playBackground = (track: BackgroundTrack, volume: number, loop: boolean) => {
+const playBackground = (
+  track: BackgroundTrack,
+  baseVolume: number,
+  loop: boolean,
+) => {
   if (typeof window === "undefined") return;
 
   stopBackground();
 
   const audio = new Audio(SOUND_PATHS[track]);
   audio.loop = loop;
-  audio.volume = volume;
+  backgroundBaseVolume = baseVolume;
+  audio.volume = backgroundBaseVolume * volume;
   audio.muted = isMuted;
   backgroundAudio = audio;
   playAudio(audio, SOUND_PATHS[track]);
@@ -70,11 +79,22 @@ const playEffect = () => {
 };
 
 export function useAudioManager() {
-  const [muted, setMuted] = useState(isMuted);
+  const [audioState, setAudioState] = useState({ isMuted, volume });
 
   useEffect(() => {
-    const listener = (nextIsMuted: boolean) => setMuted(nextIsMuted);
+    const storedVolume = window.localStorage.getItem("audioVolume");
+    if (storedVolume !== null) {
+      const parsedVolume = Number(storedVolume);
+      if (Number.isFinite(parsedVolume) && parsedVolume >= 0 && parsedVolume <= 1) {
+        volume = parsedVolume;
+      }
+    }
+
+    const listener = (nextState: { isMuted: boolean; volume: number }) =>
+      setAudioState(nextState);
     listeners.add(listener);
+    setAudioState({ isMuted, volume });
+    notifyMuteChange();
 
     return () => {
       listeners.delete(listener);
@@ -111,13 +131,25 @@ export function useAudioManager() {
     notifyMuteChange();
   }, []);
 
+  const setVolume = useCallback((nextVolume: number) => {
+    volume = Math.min(1, Math.max(0, nextVolume));
+
+    if (backgroundAudio) {
+      backgroundAudio.volume = backgroundBaseVolume * volume;
+    }
+    window.localStorage.setItem("audioVolume", String(volume));
+    notifyMuteChange();
+  }, []);
+
   return {
-    isMuted: muted,
+    isMuted: audioState.isMuted,
+    volume: audioState.volume,
     playLobbyBgm,
     playGameBgm,
     playVictoryBgm,
     playClick,
     stopAll,
     toggleMute,
+    setVolume,
   };
 }
