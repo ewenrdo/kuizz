@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from '../redis/redis.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomInt } from 'crypto';
 import { Prisma } from '../generated/prisma/client.js';
 
 interface RuntimeAnswer {
@@ -35,7 +35,7 @@ export class GameService {
   constructor(
     private redis: RedisService,
     private prisma: PrismaService,
-  ) { }
+  ) {}
 
   private infoKey(roomCode: string) {
     return `game:${roomCode}:info`;
@@ -72,7 +72,7 @@ export class GameService {
               },
             },
           },
-        ]
+        ],
       },
       include: {
         questions: {
@@ -84,7 +84,6 @@ export class GameService {
 
     if (!quiz) throw new Error('Quiz not found');
 
-    // SNAPSHOT QUESTIONS
     const snapshotQuestions: SnapshotQuestion[] = quiz.questions.map((q) => {
       const correctOptions = q.options.filter((o) => o.isCorrect);
 
@@ -104,11 +103,10 @@ export class GameService {
       };
     });
 
-    // CREATE GAME SESSION IN DB
     const session = await this.prisma.gameSession.create({
       data: {
         hostId,
-        roomCode, // <= NEW: Store roomCode
+        roomCode,
         quizId: quiz.id,
         title: quiz.title,
         questions: snapshotQuestions as Prisma.InputJsonValue,
@@ -117,37 +115,37 @@ export class GameService {
     });
 
     const hostToken = randomUUID();
-
     const client = this.redis.getClient();
     const pipeline = client.pipeline();
 
-    // Store Info Hash
-    pipeline.hset(this.infoKey(roomCode), {
+    const infoKey = this.infoKey(roomCode);
+    const questionsKey = this.questionsKey(roomCode);
+    const playersKey = this.playersKey(roomCode);
+    const nicknamesKey = this.nicknamesKey(roomCode);
+    const scoresKey = this.scoresKey(roomCode);
+
+    pipeline.hset(infoKey, {
       sessionId: session.id,
       roomCode,
       hostId,
       hostToken,
-      isLocked: 'false', // redis stores strings
+      isLocked: 'false',
       phase: 'WAITING',
       currentQuestionIndex: '0',
       createdAt: Date.now().toString(),
       title: quiz.title,
     });
 
-    // Store Questions Snapshot JSON String
-    pipeline.set(
-      this.questionsKey(roomCode),
-      JSON.stringify(snapshotQuestions),
-    );
+    pipeline.set(questionsKey, JSON.stringify(snapshotQuestions));
 
-    // Execute pipeline and set expiry (2 hours)
+    // Expirations atomiques intégrées au pipeline
+    pipeline.expire(infoKey, 7200);
+    pipeline.expire(questionsKey, 7200);
+    pipeline.expire(playersKey, 7200);
+    pipeline.expire(nicknamesKey, 7200);
+    pipeline.expire(scoresKey, 7200);
+
     await pipeline.exec();
-
-    await client.expire(this.infoKey(roomCode), 7200);
-    await client.expire(this.questionsKey(roomCode), 7200);
-    await client.expire(this.playersKey(roomCode), 7200);
-    await client.expire(this.nicknamesKey(roomCode), 7200);
-    await client.expire(this.scoresKey(roomCode), 7200);
 
     return {
       sessionId: session.id,
@@ -157,6 +155,7 @@ export class GameService {
       isLocked: false,
       phase: 'WAITING',
       currentQuestionIndex: 0,
+      title: quiz.title,
     };
   }
 
@@ -217,15 +216,13 @@ export class GameService {
       });
     });
 
-    // Cleanup Redis
     await this.deleteRoomData(roomCode, questions.length);
   }
-
-  // === ATOMIC GAME METHODS ===
 
   async getGameInfo(roomCode: string): Promise<GameInfo | null> {
     const data = await this.redis.getClient().hgetall(this.infoKey(roomCode));
     if (Object.keys(data).length === 0) return null;
+
     return {
       sessionId: data.sessionId,
       hostId: data.hostId,
@@ -256,7 +253,7 @@ export class GameService {
     const added = await this.redis
       .getClient()
       .sadd(this.nicknamesKey(roomCode), nickname.toLowerCase());
-    return added === 1; // 1 if added (unique), 0 if already existed
+    return added === 1;
   }
 
   async addPlayer(
@@ -328,18 +325,15 @@ export class GameService {
     selectedOptionId: string,
     responseTime: number,
   ) {
-    const added = await this.redis
-      .getClient()
-      .hsetnx(
-        this.answersKey(roomCode, questionIndex),
-        playerToken,
-        JSON.stringify({ selectedOptionId, responseTime }),
-      );
-    // Also set expiry for the answers key
-    await this.redis
-      .getClient()
-      .expire(this.answersKey(roomCode, questionIndex), 7200);
-    return added === 1; // true if this was their first answer
+    const client = this.redis.getClient();
+    const key = this.answersKey(roomCode, questionIndex);
+    const added = await client.hsetnx(
+      key,
+      playerToken,
+      JSON.stringify({ selectedOptionId, responseTime }),
+    );
+    await client.expire(key, 7200);
+    return added === 1;
   }
 
   async getAnswer(
@@ -375,7 +369,6 @@ export class GameService {
   }
 
   async getLeaderboard(roomCode: string) {
-    // Get descending order, with scores
     const result = await this.redis
       .getClient()
       .zrevrange(this.scoresKey(roomCode), 0, -1, 'WITHSCORES');
@@ -389,6 +382,7 @@ export class GameService {
       avatar?: object | null;
       userId?: string | null;
     }[] = [];
+
     for (let i = 0; i < result.length; i += 2) {
       const playerToken = result[i];
       const score = parseInt(result[i + 1], 10);
@@ -407,8 +401,6 @@ export class GameService {
     }
     return leaderboard;
   }
-
-  // === INTERNAL HELPERS ===
 
   private async getPlayers(roomCode: string): Promise<
     Record<
@@ -482,13 +474,10 @@ export class GameService {
     let exists = true;
 
     while (exists) {
-      roomCode = Math.floor(100000 + Math.random() * 900000).toString();
-
+      roomCode = randomInt(100000, 999999).toString();
       const hasInfo = await this.redis
         .getClient()
         .exists(this.infoKey(roomCode));
-      // Need a better check for DB if required, but normally Redis is source of truth for "active now"
-
       exists = hasInfo > 0;
     }
 
