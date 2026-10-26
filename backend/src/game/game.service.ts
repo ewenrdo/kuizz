@@ -35,7 +35,7 @@ export class GameService {
   constructor(
     private redis: RedisService,
     private prisma: PrismaService,
-  ) {}
+  ) { }
 
   private infoKey(roomCode: string) {
     return `game:${roomCode}:info`;
@@ -59,8 +59,21 @@ export class GameService {
   async createGameFromQuiz(hostId: string, quizId: string) {
     const roomCode = await this.generateUniqueRoomCode();
 
-    const quiz = await this.prisma.quiz.findUnique({
-      where: { id: quizId },
+    const quiz = await this.prisma.quiz.findFirst({
+      where: {
+        id: quizId,
+        OR: [
+          { visibility: 'PUBLIC' },
+          { ownerId: hostId },
+          {
+            sharedWith: {
+              some: {
+                userId: hostId,
+              },
+            },
+          },
+        ]
+      },
       include: {
         questions: {
           include: { options: true },
@@ -71,7 +84,7 @@ export class GameService {
 
     if (!quiz) throw new Error('Quiz not found');
 
-    // 🔥 SNAPSHOT QUESTIONS
+    // SNAPSHOT QUESTIONS
     const snapshotQuestions: SnapshotQuestion[] = quiz.questions.map((q) => {
       const correctOptions = q.options.filter((o) => o.isCorrect);
 
@@ -91,7 +104,7 @@ export class GameService {
       };
     });
 
-    // 🔥 CREATE GAME SESSION IN DB
+    // CREATE GAME SESSION IN DB
     const session = await this.prisma.gameSession.create({
       data: {
         hostId,
