@@ -10,6 +10,7 @@ import { Fredoka, Nunito } from "next/font/google";
 import Link from "next/link";
 import { AvatarModel } from "@/types";
 import Avatar from "../avatar/Avatar";
+import { useAudioManager } from "@/lib/useAudioManager";
 import {
   ArrowRight,
   CircleUser,
@@ -30,6 +31,7 @@ const nunito = Nunito({
 
 export default function JoinContent() {
   const t = useTranslations("Game");
+  const { playClick } = useAudioManager();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -450,7 +452,10 @@ export default function JoinContent() {
 
                 {step === 1 ? (
                   <button
-                    onClick={handleCheckRoom}
+                    onClick={() => {
+                      playClick();
+                      handleCheckRoom();
+                    }}
                     disabled={!code || loading}
                     className="btn-primary header-font flex w-full items-center justify-center gap-2 rounded-xl py-4 text-xl font-bold"
                   >
@@ -461,7 +466,10 @@ export default function JoinContent() {
                   </button>
                 ) : (
                   <button
-                    onClick={handleJoin}
+                    onClick={() => {
+                      playClick();
+                      handleJoin();
+                    }}
                     disabled={!nick || loading}
                     className="btn-primary header-font flex w-full items-center justify-center gap-2 rounded-xl py-4 text-xl font-bold"
                   >

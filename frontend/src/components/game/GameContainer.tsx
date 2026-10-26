@@ -16,6 +16,7 @@ import HostQuestion from "./HostQuestion";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { PlayerModel } from "@/types";
+import { useAudioManager } from "@/lib/useAudioManager";
 
 type GamePhase =
   | "WAITING"
@@ -40,6 +41,7 @@ interface CurrentQuestion {
 
 export default function GameContainer({ roomCode }: GameContainerProps) {
   const t = useTranslations("Game");
+  const { playClick } = useAudioManager();
   const [phase, setPhase] = useState<GamePhase>("WAITING");
   const [question, setQuestion] = useState<CurrentQuestion | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -264,7 +266,10 @@ export default function GameContainer({ roomCode }: GameContainerProps) {
         phase !== "QUESTION" &&
         phase !== "REVEAL" && (
           <button
-            onClick={handleAbortGame}
+            onClick={() => {
+              playClick();
+              handleAbortGame();
+            }}
             className="absolute top-4 right-4 z-50 rounded-lg bg-red-600/20 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm hover:bg-red-600/40"
           >
             End Game

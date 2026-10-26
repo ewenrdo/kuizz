@@ -22,6 +22,7 @@ interface FinalResultProps {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { useAudioManager } from "@/lib/useAudioManager";
 
 export default function FinalResult({
   players,
@@ -31,7 +32,14 @@ export default function FinalResult({
   onPlayAgain,
 }: FinalResultProps) {
   const t = useTranslations("Game");
+  const { playClick, playVictoryBgm, stopAll } = useAudioManager();
   const [localAvatar, setLocalAvatar] = useState<AvatarModel | null>(null);
+
+  useEffect(() => {
+    playVictoryBgm();
+
+    return stopAll;
+  }, [playVictoryBgm, stopAll]);
 
   useEffect(() => {
     const stored = localStorage.getItem("guestAvatar");
@@ -132,22 +140,29 @@ export default function FinalResult({
           <div className="flex gap-4">
             {sessionId && (
               <button
-                onClick={() =>
-                  (window.location.href = `/dashboard/reports/${sessionId}/stats`)
-                }
+                onClick={() => {
+                  playClick();
+                  window.location.href = `/dashboard/reports/${sessionId}/stats`;
+                }}
                 className="rounded-lg bg-white/10 px-6 py-3 font-semibold text-white shadow hover:bg-white/20"
               >
                 {t("viewStats")}
               </button>
             )}
             <button
-              onClick={() => (window.location.href = "/dashboard/quizes")}
+              onClick={() => {
+                playClick();
+                window.location.href = "/dashboard/quizes";
+              }}
               className="rounded-lg bg-white/10 px-6 py-3 font-semibold text-white shadow hover:bg-white/20"
             >
               {t("startOver")}
             </button>
             <button
-              onClick={onPlayAgain}
+              onClick={() => {
+                playClick();
+                onPlayAgain?.();
+              }}
               className="rounded-lg bg-white px-6 py-3 font-semibold text-indigo-700 shadow hover:bg-white/80"
             >
               {t("playAgain")}

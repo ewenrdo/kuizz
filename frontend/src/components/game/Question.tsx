@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Triangle, Diamond, Circle, Square } from "lucide-react";
 import LiveSync from "./LiveSync";
 import Avatar from "@/components/avatar/Avatar";
 import type { AvatarModel } from "@/types";
+import { useAudioManager } from "@/lib/useAudioManager";
 
 interface QuestionProps {
   question: string;
@@ -47,7 +48,9 @@ export default function Question({
   onSelect,
 }: QuestionProps) {
   const t = useTranslations("Game");
+  const { playClick, playGameBgm, stopAll } = useAudioManager();
   const [selected, setSelected] = useState<string | null>(null);
+
 
   // Timer calculation
   const timerProgress =
@@ -191,6 +194,7 @@ export default function Question({
               <button
                 key={opt.id}
                 onClick={() => {
+                  playClick();
                   setSelected(opt.id);
                   onSelect(opt.id);
                 }}

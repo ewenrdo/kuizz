@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { socket } from "@/lib/socket";
 import { AvatarModel, PlayerModel } from "@/types";
 import { useTranslations } from "next-intl";
+import { useAudioManager } from "@/lib/useAudioManager";
 
 interface LobbyContentInterface {
   joinCode: string;
@@ -27,7 +28,14 @@ export default function LobbyContent({
   initialIsLocked = false,
 }: LobbyContentInterface) {
   const t = useTranslations("Game");
+  const { playLobbyBgm, playClick, stopAll } = useAudioManager();
   const [isLocked, setIsLocked] = useState<boolean>(initialIsLocked);
+
+  useEffect(() => {
+    playLobbyBgm();
+
+    return stopAll;
+  }, [playLobbyBgm, stopAll]);
 
   useEffect(() => {
     setIsLocked(initialIsLocked);
@@ -51,6 +59,7 @@ export default function LobbyContent({
   }, []);
 
   const toggleLock = () => {
+    playClick();
     const hostToken = localStorage.getItem("hostToken");
     if (!hostToken) return;
 
@@ -61,6 +70,7 @@ export default function LobbyContent({
   };
 
   const startGame = () => {
+    playClick();
     const hostToken = localStorage.getItem("hostToken");
 
     socket?.emit("host_start_game", {

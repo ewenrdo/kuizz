@@ -9,6 +9,8 @@ import {
   Diamond,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
+import { useAudioManager } from "@/lib/useAudioManager";
 
 interface HostQuestionProps {
   question: string;
@@ -81,6 +83,14 @@ export default function HostQuestion({
   onEndGame,
 }: HostQuestionProps) {
   const t = useTranslations("Game");
+  const { playClick, playGameBgm, stopAll } = useAudioManager();
+
+  useEffect(() => {
+    playGameBgm();
+
+    return stopAll;
+  }, [playGameBgm, stopAll]);
+
   const totalAnswered = Object.values(answerStats).reduce((a, b) => a + b, 0);
   const waitingFor = Math.max(0, totalPlayers - totalAnswered);
   const percentCompleted =
@@ -134,14 +144,20 @@ export default function HostQuestion({
 
         <div className="flex items-center gap-4">
           <button
-            onClick={onSkipQuestion}
+            onClick={() => {
+              playClick();
+              onSkipQuestion?.();
+            }}
             className="flex items-center gap-2 rounded-lg bg-[#2a1b25] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#3a2835]"
           >
             <FastForward size={16} fill="white" />
             <span>{t("skip")}</span>
           </button>
           <button
-            onClick={onEndGame}
+            onClick={() => {
+              playClick();
+              onEndGame();
+            }}
             className="rounded-lg bg-[#ef4444] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600"
           >
             {t("endGame")}
@@ -213,7 +229,10 @@ export default function HostQuestion({
 
             {phase === "QUESTION" && totalAnswered === totalPlayers && (
               <button
-                onClick={onEndQuestion}
+                onClick={() => {
+                  playClick();
+                  onEndQuestion();
+                }}
                 className="w-full rounded-xl bg-white px-8 py-3.5 font-bold text-[#1a0f1a] shadow-lg transition-transform hover:bg-gray-200 active:scale-95"
               >
                 Show Results
@@ -222,7 +241,10 @@ export default function HostQuestion({
 
             {phase === "REVEAL" && onSkipQuestion && (
               <button
-                onClick={onSkipQuestion}
+                onClick={() => {
+                  playClick();
+                  onSkipQuestion();
+                }}
                 className="w-full rounded-xl bg-[#f97316] px-8 py-3.5 font-bold shadow-lg transition-transform hover:bg-orange-600 active:scale-95"
               >
                 Next Question
