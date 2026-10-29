@@ -45,7 +45,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { socket } from "@/lib/socket";
 import { apiFetch, getAccessToken } from "@/lib/auth";
@@ -119,11 +119,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
   };
 
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const res = await apiFetch("/users/me");
       if (!res.ok) throw new Error();
@@ -134,7 +130,11 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleDelete = async () => {
     if (!deleteId || isDeleting) return;
@@ -184,7 +184,7 @@ export default function QuizesComponent({ apiUrl }: { apiUrl: string }) {
   const handleStartGame = (quizId: string) => {
     if (loading) return;
 
-    let token = getAccessToken();
+    const token = getAccessToken();
     if(!token) {
       console.error("No access token found. Please log in.");
       return;

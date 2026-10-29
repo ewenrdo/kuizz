@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { apiFetch } from "@/lib/auth";
@@ -40,11 +40,7 @@ export default function ProfilePage() {
   const [avatarConfig, setAvatarConfig] = useState<AvatarModel | null>(null);
   const [savingAvatar, setSavingAvatar] = useState(false);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const res = await apiFetch("/users/me");
       if (!res.ok) throw new Error();
@@ -57,7 +53,11 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleSaveProfile = async () => {
     setSavingProfile(true);

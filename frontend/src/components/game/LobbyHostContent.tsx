@@ -15,7 +15,6 @@ import { socket } from "@/lib/socket";
 import { AvatarModel, PlayerModel } from "@/types";
 import { useTranslations } from "next-intl";
 import { useAudioManager } from "@/lib/useAudioManager";
-import AudioVolumeControl from "@/components/game/AudioVolumeControl";
 
 interface LobbyContentInterface {
   joinCode: string;

@@ -76,8 +76,6 @@ export default function JoinContent() {
     setLoading(true);
     setError(null);
 
-    let timeoutId: NodeJS.Timeout;
-
     const emitCheck = () => {
       socket.emit("check_room", { roomCode: code });
     };
@@ -103,7 +101,7 @@ export default function JoinContent() {
       socket.off("game_already_started");
     };
 
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       cleanupStep1Listeners();
       setError("Time out. Cannot check the room. Please try again.");
       setLoading(false);
@@ -128,7 +126,6 @@ export default function JoinContent() {
     setLoading(true);
     setError(null);
 
-    let timeoutId: NodeJS.Timeout;
     const avatarToSend = avatar || getRandomAvatar();
 
     const savedRoom = localStorage.getItem("roomCode");
@@ -179,7 +176,7 @@ export default function JoinContent() {
       socket.off("game_already_started");
     };
 
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       cleanupStep2Listeners();
       setError("Impossible de rejoindre la partie. Réessayez.");
       setLoading(false);

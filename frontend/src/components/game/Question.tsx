@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Triangle, Diamond, Circle, Square } from "lucide-react";
 import LiveSync from "./LiveSync";
@@ -48,7 +48,7 @@ export default function Question({
   onSelect,
 }: QuestionProps) {
   const t = useTranslations("Game");
-  const { playClick, playGameBgm, stopAll } = useAudioManager();
+  const { playClick } = useAudioManager();
   const [selected, setSelected] = useState<string | null>(null);
 
 
