@@ -2,7 +2,7 @@
 FROM node:22-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 WORKDIR /app
 
 # ---------- Builder ----------
@@ -11,15 +11,15 @@ FROM base AS builder
 RUN apt-get update && apt-get install -y python3 make g++ \
     && rm -rf /var/lib/apt/lists/*
 
-    COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# copy lockfile + package dulu (cache layer optimal)
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-COPY backend/package.json ./backend/
-COPY frontend/package.json ./frontend/
-
+# install SEMUA deps (jangan --prod di builder)
 RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+# Pass DATABASE_URL for prisma generate if needed (defaults to local for build)
 ARG DATABASE_URL=postgresql://postgres:secret@postgres:5432/kuizz?schema=public
 ENV DATABASE_URL=$DATABASE_URL
 
@@ -28,7 +28,6 @@ RUN pnpm prisma:generate && pnpm build
 # ---------- Production Dependencies ----------
 FROM base AS prod-deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY backend/package.json ./backend/
 RUN pnpm install --prod --frozen-lockfile
 
 # ---------- Production ----------
@@ -44,15 +43,13 @@ RUN apt-get update && apt-get install -y \
     openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copie des fichiers nécessaires au runtime
+# copy only needed files
 COPY package.json pnpm-workspace.yaml ./
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
-
-# FIX : Chemin exact vers le script entrypoint dans le dossier backend
-COPY backend/docker-entrypoint.sh ./docker-entrypoint.sh
+COPY docker-entrypoint.sh ./
 
 RUN chmod +x ./docker-entrypoint.sh && chown -R nestjs:nodejs /app
 
