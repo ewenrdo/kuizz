@@ -1,11 +1,5 @@
-"use client";
-
-import { Metadata } from "next/dist/lib/metadata/types/metadata-interface";
-import dynamic from "next/dynamic";
-
-const CreatePage = dynamic(() => import("./PageClientCreate"), {
-  ssr: false,
-});
+import type { Metadata } from "next";
+import CreatePage from "./PageClientCreate";
 
 export const metadata: Metadata = {
   title: "Quiz factory | Kuizz",
