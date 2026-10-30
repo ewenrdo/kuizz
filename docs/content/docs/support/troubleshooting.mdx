@@ -114,10 +114,15 @@ const config = {
 response.cookie("access_token", token, {
   httpOnly: true,
   secure: true,
-  domain: ".kuizz.my.id",
+  domain: ".example.com",
   sameSite: "lax",
 });
 ```
+
+Set `COOKIE_DOMAIN` to the shared parent domain of the frontend and API
+(for example, `.ewenrdo.fr` for `kuizz.ewenrdo.fr` and
+`api.ewenrdo.fr`). If it is not set, the backend derives it from
+`FRONTEND_URL` in production.
 
 ---
 
