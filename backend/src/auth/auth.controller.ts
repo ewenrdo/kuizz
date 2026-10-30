@@ -36,20 +36,7 @@ const REFRESH_COOKIE = 'refreshToken';
 function getCookieDomain(): string | undefined {
   if (!isProd) return undefined;
 
-  const configuredDomain = process.env.COOKIE_DOMAIN?.trim();
-  if (configuredDomain) return configuredDomain;
-
-  const frontendUrl = process.env.FRONTEND_URL;
-  if (!frontendUrl) return undefined;
-
-  try {
-    const hostname = new URL(frontendUrl).hostname;
-    const parts = hostname.split('.');
-    if (parts.length < 2 || hostname === 'localhost') return undefined;
-    return `.${parts.slice(-2).join('.')}`;
-  } catch {
-    return undefined;
-  }
+  return process.env.COOKIE_DOMAIN?.trim() || undefined;
 }
 
 function getCookieOptions() {

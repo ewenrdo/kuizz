@@ -121,8 +121,9 @@ response.cookie("access_token", token, {
 
 Set `COOKIE_DOMAIN` to the shared parent domain of the frontend and API
 (for example, `.ewenrdo.fr` for `kuizz.ewenrdo.fr` and
-`api.ewenrdo.fr`). If it is not set, the backend derives it from
-`FRONTEND_URL` in production.
+`api.ewenrdo.fr`). Leave it unset when the API uses a different domain
+(for example, a Render hostname); the browser will then keep a host-only
+cookie for the API.
 
 ---
 
