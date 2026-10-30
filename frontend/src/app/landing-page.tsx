@@ -55,6 +55,7 @@ export default function LandingPage() {
 
   const handleLanguageChange = () => {
     document.cookie = `NEXT_LOCALE=${locale === "fr" ? "en" : "fr"}; path=/; max-age=31536000`;
+    document.cookie = "NEXT_LOCALE_MANUAL=1; path=/; max-age=31536000";
     router.refresh();
   };
 

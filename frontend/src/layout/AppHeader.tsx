@@ -65,6 +65,7 @@ const AppHeader: React.FC = () => {
     if (nextLocale === locale) return;
 
     document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000`;
+    document.cookie = "NEXT_LOCALE_MANUAL=1; path=/; max-age=31536000";
     router.refresh();
   }
 
