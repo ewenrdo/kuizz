@@ -20,6 +20,10 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
+  app.getHttpAdapter().getInstance().get('/health', (_request, response) => {
+    response.sendStatus(200);
+  });
+
   // Utilisation dynamique du port Render
   const port = process.env.PORT || 3001;
   await app.listen(port, '0.0.0.0');
